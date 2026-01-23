@@ -1,0 +1,11 @@
+{
+  "name": "mern-fsa-starter",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "pnpm -r dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

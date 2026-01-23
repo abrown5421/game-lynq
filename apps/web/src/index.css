@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'PrimaryFont';
+  src: url('/assets/fonts/primary.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'SecondaryFont';
+  src: url('/assets/fonts/secondary.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --color-primary: #00A2EC;
+  --color-primary-contrast: #FFFDF6;
+  --color-secondary: #002B4C;
+  --color-secondary-contrast: #EFEFD0;
+  --color-accent: #4400FF;
+  --color-accent-contrast: #FFFDF6;
+  
+  --color-neutral: #001322;
+  --color-neutral-contrast: #FFFDF6;
+  --color-neutral2: #071B2A;
+  --color-neutral2-contrast: #FFFDF6;
+  --color-neutral3: #120044;
+  --color-neutral3-contrast: #FFFDF6;
+  
+  --font-primary: 'PrimaryFont', sans-serif;
+  --font-secondary: 'SecondaryFont', sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-primary text-primary-contrast rounded-xl hover:bg-transparent hover:text-primary hover:border-primary transition-all;
+  }
+  .btn-secondary {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-secondary text-secondary-contrast rounded-xl hover:bg-transparent hover:text-secondary hover:border-secondary transition-all;
+  }
+  .btn-accent {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-accent text-accent-contrast rounded-xl hover:bg-transparent hover:text-accent hover:border-accent transition-all;
+  }
+  .btn-neutral {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-neutral text-primary rounded-xl hover:bg-primary hover:text-neutral transition-all;
+  }
+  .btn-error {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-red-500 text-accent-contrast rounded-xl hover:bg-transparent hover:text-red-500 hover:border-red-500 transition-all;
+  }
+  .btn-success {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-green-600 text-accent-contrast rounded-xl hover:bg-transparent hover:text-green-600 hover:border-green-600 transition-all;
+  }
+  .btn-gray {
+    @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-gray-500 text-accent-contrast rounded-xl hover:bg-transparent hover:text-gray-500 hover:border-gray-500 transition-all;
+  }
+  .btn-disabled {
+    @apply flex w-full justify-center items-center px-4 py-2 border-2 border-transparent 
+           bg-gray-300 text-gray-500 rounded-xl 
+           cursor-not-allowed opacity-50 
+           hover:bg-gray-300 hover:text-gray-500 hover:border-transparent 
+           pointer-events-none;
+  }
+  .input-primary {
+    @apply p-2 border border-gray-300 bg-neutral2 text-neutral2-contrast rounded-md
+          placeholder:text-gray-400
+          focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+
+  .input-secondary {
+    @apply p-2 border border-gray-300 bg-neutral3 text-neutral3-contrast rounded-md
+          placeholder:text-gray-400
+          focus:outline-none focus:ring-2 focus:ring-secondary;
+  }
+
+  .input-accent {
+    @apply p-2 border border-gray-300 bg-neutral3 text-neutral3-contrast rounded-md
+          placeholder:text-gray-400
+          focus:outline-none focus:ring-2 focus:ring-accent;
+  }
+
+  .input-disabled {
+    @apply p-2 border border-gray-300 bg-gray-200 text-gray-400 rounded-md
+          placeholder:text-gray-400
+          focus:outline-none focus:ring-0 cursor-not-allowed;
+  }
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0px;
+  padding: 0px;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.nav {
+  height: 56px;
+}
+
+.minus-nav {
+  height: calc(100vh - 56px);
+  overflow: scroll;
+}
+
+.minus-drawer {
+  height: calc(100vh - 94px);
+  overflow: scroll;
+}
+
+.sup-min-nav {
+  min-height: calc(100vh - 56px);
+}

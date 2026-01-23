@@ -1,0 +1,6 @@
+{ 
+    "blog": false, 
+    "ecommerce": false, 
+    "staff": false, 
+    "contact": false 
+}

@@ -1,0 +1,156 @@
+import { motion } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDeleteSessionMutation, useGetSessionByIdQuery, useRemovePlayerMutation, useStartGameMutation } from '../../app/store/api/sessionsApi';
+import Loader from '../../features/loader/Loader';
+import { QRCodeSVG } from 'qrcode.react';
+import { useEffect } from 'react';
+import { useAppDispatch } from '../../app/store/hooks';
+import { openAlert } from '../../features/alert/alertSlice';
+
+const Host = () => {
+  const dispatch = useAppDispatch();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { data: session, isLoading, refetch } = useGetSessionByIdQuery(id!, {
+    pollingInterval: 2000, 
+  });
+  const [removePlayer] = useRemovePlayerMutation();
+  const [startGame, { isLoading: isStarting }] = useStartGameMutation();
+  const [deleteSession, { isLoading: isDeleting }] = useDeleteSessionMutation();
+
+  useEffect(() => {
+    if (session?.status === 'playing') {
+      navigate(`/host/${id}/game`);
+    }
+  }, [session?.status, navigate, id]);
+
+  const handleRemovePlayer = async (playerName: string) => {
+    if (!id) return;
+    try {
+      await removePlayer({ sessionId: id, data: { playerName } }).unwrap();
+      refetch();
+    } catch (err) {
+      console.error('Failed to remove player:', err);
+    }
+  };
+
+  const handleEndSession = async () => {
+    if (!id) return;
+    try {
+      await deleteSession(id).unwrap();
+      navigate('/')
+    } catch (err) {
+      dispatch(openAlert({
+        open: true,
+        closeable: true,
+        severity: 'error',
+        message: 'There was a problem trying to delete the session you started. Please try again later.',
+        anchor: { x: 'right', y: 'bottom' },
+      }));
+    }
+  }
+
+  const handleStartGame = async () => {
+    if (!id) return;
+    try {
+      await startGame(id).unwrap();
+      navigate('/genre')
+    } catch (err) {
+      dispatch(openAlert({
+        open: true,
+        closeable: true,
+        severity: 'error',
+        message: 'There was a problem trying to create the session. Please try again later.',
+        anchor: { x: 'right', y: 'bottom' },
+      }));
+    }
+  };
+
+  if (isLoading || !session) {
+    return (
+      <div className="w-screen h-screen bg-neutral-contrast flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  const players = session.players || []; 
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-neutral text-neutral-contrast sup-min-nav relative z-0 min-h-screen"
+    >
+      <div className="flex flex-row w-full sup-min-nav">
+        <div className="flex flex-col items-center justify-center flex-1 sup-min-nav p-4">
+          <div className="w-full max-w-lg bg-accent text-accent-contrast p-6 shadow-md flex flex-col items-center space-y-3 text-center">
+            <h2 className="text-2xl text-accent-contrast font-primary">Your Session Code</h2>
+            <div className="text-5xl font-mono bg-accent-contrast/30 pb-1 px-4">{session.code}</div>
+            <p className="text-s">
+              Use the code above to join the session! Players can go to{' '}
+              <span className="font-mono bg-accent-contrast/30 px-2 pb-1">
+                /join/{session.code}
+              </span>{' '}
+              or scan the QR code below.
+            </p>
+
+            <div className="mt-4">
+              <QRCodeSVG
+                value={`${window.location.origin}/join/${session.code}`}
+                size={150}
+                bgColor="transparent"
+                fgColor="#fff"
+              />
+            </div>
+            <div className="w-full gap-3 flex flex-row">
+              <button
+                onClick={handleEndSession}
+                className={`${isDeleting ? 'btn-disabled cursor-not-allowed' : 'btn-error'} mt-4 w-full`}
+              >
+                {isDeleting ? 'Ending...' : 'End Session'}
+              </button>
+              <button
+                onClick={handleStartGame}
+                disabled={players.length === 0 || isStarting}
+                className={`${players.length === 0 || isStarting ? 'btn-disabled cursor-not-allowed' : 'btn-primary'} mt-4 w-full`}
+              >
+                {isStarting ? 'Starting...' : 'Pick Genre'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col flex-1 sup-min-nav bg-accent p-4 shadow-md">
+          <h3 className="text-xl font-semibold text-accent-contrast mb-3">
+            Players ({players.length})
+          </h3>
+          {players.length === 0 ? (
+            <p className="text-accent-contrast/70">No players have joined yet.</p>
+          ) : (
+            <ul className="space-y-2">
+              {players.map((player: any, idx: number) => (
+                <li
+                  key={idx}
+                  className="bg-accent-contrast/20 text-accent-contrast px-3 py-2 rounded-md flex items-center justify-between hover:bg-accent-contrast/40 transition"
+                >
+                  <span>{player.name}</span>
+                  <button
+                    onClick={() => handleRemovePlayer(player.name)}
+                    className="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Host;
