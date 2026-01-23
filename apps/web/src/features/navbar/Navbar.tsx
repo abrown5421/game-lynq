@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
   return (
     <div className="bg-neutral text-neutral-contrast flex flex-row justify-between items-center px-4 nav relative z-10 border-b border-neutral-contrast/15">
       <Link className="text-xl font-primary" to="/">
-        Ipod<span className="text-primary">Wars</span>
+        Game<span className="text-primary">Lynq</span>
       </Link>
       
       <div className="hidden lg:flex items-center">
