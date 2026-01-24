@@ -57,6 +57,8 @@ export const sessionsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: (result, error, arg) => 
+        result ? [{ type: "Session", id: result._id }] : [],
     }),
 
     leaveSession: builder.mutation<
@@ -68,6 +70,9 @@ export const sessionsApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: "Session", id: sessionId },
+      ],
     }),
 
     removePlayer: builder.mutation<
@@ -79,6 +84,9 @@ export const sessionsApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: "Session", id: sessionId },
+      ],
     }),
 
     updatePlayerName: builder.mutation<
@@ -90,6 +98,23 @@ export const sessionsApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: "Session", id: sessionId },
+      ],
+    }),
+
+    selectGame: builder.mutation<
+      ISession,
+      { sessionId: string; gameId: string }
+    >({
+      query: ({ sessionId, gameId }) => ({
+        url: `/sessions/${sessionId}/select-game`,
+        method: "POST",
+        body: { gameId },
+      }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: "Session", id: sessionId },
+      ],
     }),
 
     startGame: builder.mutation<ISession, string>({
@@ -97,6 +122,37 @@ export const sessionsApi = baseApi.injectEndpoints({
         url: `/sessions/${sessionId}/start`,
         method: "POST",
       }),
+      invalidatesTags: (result, error, sessionId) => [
+        { type: "Session", id: sessionId },
+      ],
+    }),
+
+    gameAction: builder.mutation<
+      ISession,
+      { 
+        sessionId: string; 
+        action: "updatePhase" | "updateScore" | "incrementRound" | "updateData";
+        payload: any;
+      }
+    >({
+      query: ({ sessionId, action, payload }) => ({
+        url: `/sessions/${sessionId}/game-action`,
+        method: "POST",
+        body: { action, payload },
+      }),
+      invalidatesTags: (result, error, { sessionId }) => [
+        { type: "Session", id: sessionId },
+      ],
+    }),
+
+    endGame: builder.mutation<ISession, string>({
+      query: (sessionId) => ({
+        url: `/sessions/${sessionId}/end-game`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, sessionId) => [
+        { type: "Session", id: sessionId },
+      ],
     }),
   }),
 });
@@ -113,5 +169,8 @@ export const {
   useLeaveSessionMutation,
   useRemovePlayerMutation,
   useUpdatePlayerNameMutation,
+  useSelectGameMutation,
   useStartGameMutation,
+  useGameActionMutation,
+  useEndGameMutation,
 } = sessionsApi;

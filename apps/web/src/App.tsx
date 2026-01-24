@@ -15,6 +15,7 @@ import PageNotFound from "./pages/pageNotFound/PageNotFound";
 import Host from "./pages/host/Host";
 import Join from "./pages/join/Join";
 import Genre from "./pages/genre/Genre";
+import Games from "./pages/games/Games";
 const App: React.FC = () => {
   const location = useLocation();
   const { isLoading } = useGetCurrentUserQuery();
@@ -42,6 +43,8 @@ const App: React.FC = () => {
               <Route path="/genre" element={<Genre />} />
               <Route path="/join/*" element={<Join />} />
               <Route path="/host/:id" element={<Host />} />
+              <Route path="/host/:id/games" element={<Games />} />
+              <Route path="/join/:code/games" element={<Games />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </div>
