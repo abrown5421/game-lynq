@@ -7,15 +7,18 @@ import Pagination from '../../features/pagination/Pagination';
 import { useState, useMemo } from 'react';
 import { useParams } from "react-router-dom";
 import { useSelectGameMutation } from '../../app/store/api/sessionsApi';
+import { openAlert } from '../../features/alert/alertSlice';
+import { useAppDispatch } from '../../app/store/hooks';
 
 const GAMES_PER_PAGE = 10;
 
 const Games = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
   const { data: games, isLoading, error } = useGetGamesQuery();
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [selectGame] = useSelectGameMutation();
   const totalPages = useMemo(() => {
     if (!games) return 0;
     return Math.ceil(games.length / GAMES_PER_PAGE);
@@ -78,8 +81,25 @@ const Games = () => {
                 whileHover={{ scale: 1.03 }}
                 className="bg-accent text-accent-contrast rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform transform"
                 onClick={async () => {
-                  
-                  navigate(`/host/${id}/game`);
+                  if (!id) return;
+
+                  try {
+                    await selectGame({
+                      sessionId: id,
+                      gameId: game._id,
+                    }).unwrap();
+
+                    navigate(`/host/${id}/settings`);
+                  } catch (err: any) {
+                    dispatch(openAlert({
+                        open: true,
+                        closeable: true,
+                        severity: "error",
+                        message: `Failed to select game: ${err?.data?.error}`,
+                        anchor: { x: "right", y: "bottom" },
+                      })
+                    )
+                  }
                 }}
               >
                 {game.image ? (
