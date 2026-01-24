@@ -17,6 +17,8 @@ const Host = () => {
   const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
 
+  useEffect(()=>{console.log(session)}, [session])
+
   useEffect(() => {
     if (!session) return;
 
