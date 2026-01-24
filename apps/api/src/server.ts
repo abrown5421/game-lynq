@@ -5,6 +5,7 @@ import { connectDB } from "./db";
 import userRoutes from "./routes/users.routes";
 import authRoutes from "./routes/auth.routes";
 import sessionRoutes from "./routes/sessions.routes";
+import gameRoutes from "./routes/games.routes";
 import cookieParser from "cookie-parser";
 import integrationsRoutes from "./integrations/routes/integrations.routes";
 
@@ -58,6 +59,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/integrations", integrationsRoutes);
 app.use("/api/sessions", sessionRoutes);
+app.use("/api/games", gameRoutes);
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {

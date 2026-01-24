@@ -1,26 +1,41 @@
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDeleteSessionMutation, useGetSessionByIdQuery, useRemovePlayerMutation, useStartGameMutation } from '../../app/store/api/sessionsApi';
+import { useDeleteSessionMutation, useGetSessionByIdQuery, useRemovePlayerMutation, useSelectGameMutation, useStartGameMutation } from '../../app/store/api/sessionsApi';
 import Loader from '../../features/loader/Loader';
-import { QRCodeSVG } from 'qrcode.react';
-import { useEffect } from 'react';
 import { useAppDispatch } from '../../app/store/hooks';
+import { QRCodeSVG } from 'qrcode.react';
 import { openAlert } from '../../features/alert/alertSlice';
-
+import { useEffect } from 'react';
 const Host = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: session, isLoading, refetch } = useGetSessionByIdQuery(id!, {
-    pollingInterval: 2000, 
-  });
+
+  const { data: session, isLoading, refetch } = useGetSessionByIdQuery(id!, { pollingInterval: 2000 });
   const [removePlayer] = useRemovePlayerMutation();
+  const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
-  const [deleteSession, { isLoading: isDeleting }] = useDeleteSessionMutation();
+
+  const [selectGame] = useSelectGameMutation();
 
   useEffect(() => {
-    if (session?.status === 'playing') {
-      navigate(`/host/${id}/game`);
+    if (!session) return;
+
+    switch (session.status) {
+      case "selectGame":
+        navigate(`/host/${id}/games`);
+        break;
+      case "settings":
+        navigate(`/host/${id}/settings`);
+        break;
+      case "playing":
+        navigate(`/host/${id}/game`);
+        break;
+      case "ended":
+        navigate(`/`);
+        break;
+      default:
+        break;
     }
   }, [session?.status, navigate, id]);
 
@@ -30,7 +45,7 @@ const Host = () => {
       await removePlayer({ sessionId: id, data: { playerName } }).unwrap();
       refetch();
     } catch (err) {
-      console.error('Failed to remove player:', err);
+      console.error("Failed to remove player:", err);
     }
   };
 
@@ -38,31 +53,41 @@ const Host = () => {
     if (!id) return;
     try {
       await deleteSession(id).unwrap();
-      navigate('/')
+      navigate("/");
     } catch (err) {
-      dispatch(openAlert({
-        open: true,
-        closeable: true,
-        severity: 'error',
-        message: 'There was a problem trying to delete the session you started. Please try again later.',
-        anchor: { x: 'right', y: 'bottom' },
-      }));
+      dispatch(
+        openAlert({
+          open: true,
+          closeable: true,
+          severity: "error",
+          message: "Failed to end session",
+          anchor: { x: "right", y: "bottom" },
+        })
+      );
     }
-  }
+  };
 
   const handleStartGame = async () => {
-    if (!id) return;
+    if (!id || !session) return;
+
     try {
-      await startGame(id).unwrap();
-      navigate('/genre')
+      if (session.selectedGameId) {
+        await startGame(id).unwrap();
+      } else {
+        navigate(`/host/${id}/games`);
+      }
+
+      refetch();
     } catch (err) {
-      dispatch(openAlert({
-        open: true,
-        closeable: true,
-        severity: 'error',
-        message: 'There was a problem trying to create the session. Please try again later.',
-        anchor: { x: 'right', y: 'bottom' },
-      }));
+      dispatch(
+        openAlert({
+          open: true,
+          closeable: true,
+          severity: "error",
+          message: "Failed to start game",
+          anchor: { x: "right", y: "bottom" },
+        })
+      );
     }
   };
 
@@ -74,7 +99,7 @@ const Host = () => {
     );
   }
 
-  const players = session.players || []; 
+  const players = session.players || [];
 
   return (
     <motion.div
@@ -108,9 +133,9 @@ const Host = () => {
             <div className="w-full gap-3 flex flex-row">
               <button
                 onClick={handleEndSession}
-                className={`${isDeleting ? 'btn-disabled cursor-not-allowed' : 'btn-error'} mt-4 w-full`}
+                className="btn-error mt-4 w-full"
               >
-                {isDeleting ? 'Ending...' : 'End Session'}
+                End Session
               </button>
               <button
                 onClick={handleStartGame}
@@ -122,7 +147,7 @@ const Host = () => {
             </div>
           </div>
         </div>
-
+          
         <div className="flex flex-col flex-1 sup-min-nav bg-accent p-4 shadow-md">
           <h3 className="text-xl font-semibold text-accent-contrast mb-3">
             Players ({players.length})
