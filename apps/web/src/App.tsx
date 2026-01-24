@@ -14,8 +14,9 @@ import Loader from "./features/loader/Loader";
 import PageNotFound from "./pages/pageNotFound/PageNotFound";
 import Host from "./pages/host/Host";
 import Join from "./pages/join/Join";
-import Genre from "./pages/genre/Genre";
 import Games from "./pages/games/Games";
+import Settings from "./pages/settings/Settings";
+import Game from "./pages/game/Game";
 const App: React.FC = () => {
   const location = useLocation();
   const { isLoading } = useGetCurrentUserQuery();
@@ -40,10 +41,11 @@ const App: React.FC = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile/:id" element={<Profile />} />{" "}
               {/* new routes inserted here */}
-              <Route path="/genre" element={<Genre />} />
+              <Route path="/host/:id/game" element={<Game />} />
               <Route path="/join/*" element={<Join />} />
               <Route path="/host/:id" element={<Host />} />
               <Route path="/host/:id/games" element={<Games />} />
+              <Route path="/host/:id/settings" element={<Settings />} />
               <Route path="/join/:code/games" element={<Games />} />
               <Route path="*" element={<PageNotFound />} />
             </Routes>

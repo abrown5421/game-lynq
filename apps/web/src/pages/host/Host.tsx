@@ -6,6 +6,7 @@ import { useAppDispatch } from '../../app/store/hooks';
 import { QRCodeSVG } from 'qrcode.react';
 import { openAlert } from '../../features/alert/alertSlice';
 import { useEffect } from 'react';
+
 const Host = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
@@ -15,8 +16,6 @@ const Host = () => {
   const [removePlayer] = useRemovePlayerMutation();
   const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
-
-  const [selectGame] = useSelectGameMutation();
 
   useEffect(() => {
     if (!session) return;

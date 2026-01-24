@@ -5,15 +5,17 @@ import { useGetGamesQuery } from '../../app/store/api/gamesApi';
 import Loader from '../../features/loader/Loader';
 import Pagination from '../../features/pagination/Pagination';
 import { useState, useMemo } from 'react';
+import { useParams } from "react-router-dom";
+import { useSelectGameMutation } from '../../app/store/api/sessionsApi';
 
 const GAMES_PER_PAGE = 10;
 
 const Games = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { data: games, isLoading, error } = useGetGamesQuery();
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Paginate games
   const totalPages = useMemo(() => {
     if (!games) return 0;
     return Math.ceil(games.length / GAMES_PER_PAGE);
@@ -75,7 +77,10 @@ const Games = () => {
                 key={game._id}
                 whileHover={{ scale: 1.03 }}
                 className="bg-accent text-accent-contrast rounded-lg shadow-md overflow-hidden flex flex-col cursor-pointer transition-transform transform"
-                onClick={() => navigate(`/host/game/${game._id}`)}
+                onClick={async () => {
+                  
+                  navigate(`/host/${id}/game`);
+                }}
               >
                 {game.image ? (
                   <img
