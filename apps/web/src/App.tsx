@@ -17,6 +17,7 @@ import Join from "./pages/join/Join";
 import Games from "./pages/games/Games";
 import Settings from "./pages/settings/Settings";
 import Game from "./pages/game/Game";
+import PlayerGame from "./pages/game/PlayerGame";
 const App: React.FC = () => {
   const location = useLocation();
   const { isLoading } = useGetCurrentUserQuery();
@@ -42,6 +43,7 @@ const App: React.FC = () => {
               <Route path="/profile/:id" element={<Profile />} />{" "}
               {/* new routes inserted here */}
               <Route path="/host/:id/game" element={<Game />} />
+              <Route path="/join/:id/:playerId/game" element={<PlayerGame />} />
               <Route path="/join/*" element={<Join />} />
               <Route path="/host/:id" element={<Host />} />
               <Route path="/host/:id/games" element={<Games />} />

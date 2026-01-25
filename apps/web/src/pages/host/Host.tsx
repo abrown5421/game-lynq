@@ -17,8 +17,6 @@ const Host = () => {
   const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
 
-  useEffect(()=>{console.log(session)}, [session])
-
   useEffect(() => {
     if (!session) return;
 
@@ -143,7 +141,7 @@ const Host = () => {
                 disabled={players.length === 0 || isStarting}
                 className={`${players.length === 0 || isStarting ? 'btn-disabled cursor-not-allowed' : 'btn-primary'} mt-4 w-full`}
               >
-                {isStarting ? 'Starting...' : 'Pick Genre'}
+                {isStarting ? <Loader />  : 'Pick Game'}
               </button>
             </div>
           </div>

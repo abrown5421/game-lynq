@@ -5,7 +5,7 @@ import Loader from "../../features/loader/Loader";
 import { gameUIRegistry } from "../games/gameUIRegistry";
 import { useEffect } from "react";
 
-const Game = () => {
+const PlayerGame = () => {
   const { id } = useParams<{ id: string }>();
 
   const { data: session, isLoading } = useGetSessionByIdQuery(id!, {
@@ -53,4 +53,4 @@ const Game = () => {
   );
 };
 
-export default Game;
+export default PlayerGame;

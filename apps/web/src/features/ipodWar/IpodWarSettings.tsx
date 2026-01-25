@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { useState } from "react";
 import { openAlert } from '../../features/alert/alertSlice';
 import { useAppDispatch } from '../../app/store/hooks';
+import { useGameActionMutation } from '../../app/store/api/sessionsApi';
+import { useNavigate, useParams } from 'react-router-dom';
 
 type Genre = {
   name: string;
@@ -28,13 +30,15 @@ const GENRES: Genre[] = [
 ];
 
 const MIN_TRACKS = 20;
-const MAX_TRACKS = 240;
+const MAX_TRACKS = 200;
 const DEFAULT_TRACKS = 60;
 const DEFAULT_ROUND_DURATION = 60;
 
 const IpodWarSettings = () => {
   const dispatch = useAppDispatch();
-
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [gameAction] = useGameActionMutation();
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [trackCount, setTrackCount] = useState<number>(DEFAULT_TRACKS);
   const [roundDuration, setRoundDuration] = useState<number>(DEFAULT_ROUND_DURATION);
@@ -81,14 +85,69 @@ const IpodWarSettings = () => {
     return valid;
   };
 
-  const handleStartGame = () => {
-    if (!validate()) return;
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
-    console.log("Game Started!", {
-      genre: selectedGenre,
-      trackCount,
-      roundDuration,
-    });
+  const handleStartGame = async () => {
+    if (!validate() || !id) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/integrations/itunes/search?genre=${selectedGenre}&trackCount=200`,
+        { headers: { "Accept": "application/json" } }
+      );
+
+      const data = await response.json();
+
+      const allTracks = data.tracks.map((track: any) => ({
+        name: track.trackName,
+        artist: track.artistName,
+        previewUrl: track.previewUrl,
+        artwork: track.artworkUrl100,
+      }));
+
+      console.log(allTracks)
+
+      const shuffledTracks = shuffleArray(allTracks);
+
+      const selectedTracks = shuffledTracks.slice(0, trackCount);
+
+      await gameAction({
+        sessionId: id,
+        action: "updateData",
+        payload: {
+          data: {
+            tracks: selectedTracks,
+            settings: {
+              genre: selectedGenre,
+              trackCount,
+              roundDuration,
+            }
+          }
+        }
+      });
+
+      
+      navigate(`/host/${id}/game`);
+
+    } catch (err) {
+      console.error(err);
+      dispatch(
+        openAlert({
+          open: true,
+          closeable: true,
+          severity: "error",
+          message: "Failed to fetch tracks. Please try again later.",
+          anchor: { x: "right", y: "bottom" },
+        })
+      );
+    }
   };
 
   return (
