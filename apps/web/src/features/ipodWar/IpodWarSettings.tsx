@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
 import { useState } from "react";
-import { openAlert } from '../../features/alert/alertSlice';
+import { openAlert } from '../alert/alertSlice';
 import { useAppDispatch } from '../../app/store/hooks';
-import { useGameActionMutation } from '../../app/store/api/sessionsApi';
+import { useGameActionMutation, useStartGameMutation } from '../../app/store/api/sessionsApi';
 import { useNavigate, useParams } from 'react-router-dom';
+import Loader from '../loader/Loader';
 
 type Genre = {
   name: string;
@@ -39,6 +40,8 @@ const IpodWarSettings = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [gameAction] = useGameActionMutation();
+  const [startGame] = useStartGameMutation();
+  const [loadingGame, setLoadingGame] = useState<boolean>(false);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [trackCount, setTrackCount] = useState<number>(DEFAULT_TRACKS);
   const [roundDuration, setRoundDuration] = useState<number>(DEFAULT_ROUND_DURATION);
@@ -95,6 +98,7 @@ const IpodWarSettings = () => {
   };
 
   const handleStartGame = async () => {
+    setLoadingGame(true)
     if (!validate() || !id) return;
 
     try {
@@ -112,10 +116,7 @@ const IpodWarSettings = () => {
         artwork: track.artworkUrl100,
       }));
 
-      console.log(allTracks)
-
       const shuffledTracks = shuffleArray(allTracks);
-
       const selectedTracks = shuffledTracks.slice(0, trackCount);
 
       await gameAction({
@@ -123,17 +124,25 @@ const IpodWarSettings = () => {
         action: "updateData",
         payload: {
           data: {
+            currentTrack: selectedTracks[0],
+            revealedAnswer: null,
+            readyPlayers: [],
+            round: 0,
             tracks: selectedTracks,
             settings: {
               genre: selectedGenre,
               trackCount,
               roundDuration,
-            }
+            },
+            submissions: [],
+            roundStartTime: Date.now(),
+            phase: 'playing',
           }
         }
       });
+      setLoadingGame(false)
+      await startGame(id);
 
-      
       navigate(`/host/${id}/game`);
 
     } catch (err) {
@@ -194,7 +203,7 @@ const IpodWarSettings = () => {
             <label>Round Duration (seconds)</label>
             <input
               type="number"
-              min={5}
+              min={30}
               value={roundDuration}
               onChange={(e) => {
                 setRoundDuration(Number(e.target.value));
@@ -213,14 +222,12 @@ const IpodWarSettings = () => {
             onClick={handleStartGame}
             className="mt-4 w-full px-6 py-3 rounded bg-primary text-white font-bold hover:brightness-110"
           >
-            Start Game
+            {loadingGame ? <Loader /> : "Start Game"}
           </button>
 
         </div>
 
-        <div
-          className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-2 lg:grid-cols-4"
-        >
+        <div className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-2 lg:grid-cols-4">
           {GENRES.map((genre) => {
             const isSelected = selectedGenre === genre.name;
             const hasError = errors.genre && !selectedGenre;

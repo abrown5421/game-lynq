@@ -5,17 +5,30 @@ import Loader from '../../features/loader/Loader';
 import { useAppDispatch } from '../../app/store/hooks';
 import { QRCodeSVG } from 'qrcode.react';
 import { openAlert } from '../../features/alert/alertSlice';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Host = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
+  const joinAudio = new Audio("/assets/audio/join.mp3");
   const { data: session, isLoading, refetch } = useGetSessionByIdQuery(id!, { pollingInterval: 2000 });
   const [removePlayer] = useRemovePlayerMutation();
   const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
+  const [prevPlayerCount, setPrevPlayerCount] = useState(0);
+
+  useEffect(() => {
+    if (!session?.players) return;
+
+    if (session.players.length > prevPlayerCount) {
+      joinAudio.play().catch((err) => {
+        console.warn("Failed to play join sound:", err);
+      });
+    }
+
+    setPrevPlayerCount(session.players.length);
+  }, [session?.players]);
 
   useEffect(() => {
     if (!session) return;

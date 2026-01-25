@@ -244,12 +244,20 @@ router.post("/:id/game-action", async (req, res) => {
           ...session.gameState.data,
           ...payload.data,
         };
+        
+        if (payload.scores) {
+          session.gameState.scores = payload.scores;
+        }
         break;
       
       default:
         return res.status(400).json({ error: "Unknown action" });
     }
 
+    session.markModified('gameState');
+    session.markModified('gameState.data');
+    session.markModified('gameState.scores');
+    
     await session.save();
     res.json(session);
   } catch (err: any) {
