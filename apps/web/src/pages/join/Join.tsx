@@ -46,7 +46,8 @@ const Join = () => {
         setSession(result);
         
         if (result.status === 'playing') {
-          navigate(`/join/${result.code}/game`);
+          const playerId = playerStillInSession.userId || playerStillInSession.unId;
+          navigate(`/join/${result._id}/${playerId}/game`);  
         }
       } catch (err) {
         console.error('Failed to fetch session:', err);
