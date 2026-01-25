@@ -251,7 +251,7 @@ const IpodWarGameUI = ({ session }: Props) => {
           <div className="bg-accent/10 rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Player Results</h2>
             <div className="space-y-3">
-              {gameData.revealedAnswer.submissions
+              {[...gameData.revealedAnswer.submissions]
                 .sort((a, b) => (b.points || 0) - (a.points || 0))
                 .map((sub, i) => (
                   <div key={i} className="bg-accent/20 p-4 rounded-lg">
