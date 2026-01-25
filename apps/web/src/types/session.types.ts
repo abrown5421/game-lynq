@@ -35,6 +35,13 @@ export interface RemovePlayerDto { playerName: string; }
 export interface UpdatePlayerNameDto { oldName: string; newName: string; }
 export interface SelectGameDto { gameId: string; }
 export interface GameActionDto {
-  action: "updatePhase" | "updateScore" | "incrementRound" | "updateData";
-  payload: { phase?: string; playerId?: string; score?: number; data?: any; };
+  action: "updatePhase" | "updateScore" | "incrementRound" | "updateData" | "updateStatus";
+  payload: { 
+    phase?: string; 
+    playerId?: string; 
+    score?: number; 
+    data?: any;
+    scores?: Record<string, number>;
+    status?: string;
+  };
 }

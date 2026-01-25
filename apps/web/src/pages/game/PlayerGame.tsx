@@ -1,22 +1,19 @@
-import { motion } from "framer-motion";
-import { useParams } from "react-router-dom";
-import { useGetSessionByIdQuery } from "../../app/store/api/sessionsApi";
-import Loader from "../../features/loader/Loader";
-import { gameUIRegistry } from "../games/gameUIRegistry";
-import { useEffect } from "react";
+import { motion } from 'framer-motion';
+import { useParams } from 'react-router-dom';
+import { useGetSessionByIdQuery } from '../../app/store/api/sessionsApi';
+import Loader from '../../features/loader/Loader';
+import { playerGameUIRegistry } from '../games/playerGameUIRegistry';
 
 const PlayerGame = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, playerId } = useParams<{ id: string; playerId: string }>();
 
   const { data: session, isLoading } = useGetSessionByIdQuery(id!, {
-    pollingInterval: 2000,
+    pollingInterval: 1000,
   });
 
-  useEffect(()=>{console.log(session)}, [session])
-  
   if (isLoading || !session) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center">
+      <div className="w-screen h-screen flex items-center justify-center bg-neutral">
         <Loader />
       </div>
     );
@@ -26,13 +23,19 @@ const PlayerGame = () => {
 
   if (!gameId) {
     return (
-      <div className="text-center text-xl text-yellow-500">
-        No game selected yet.
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="w-screen h-screen flex items-center justify-center bg-neutral"
+      >
+        <div className="text-center text-xl text-yellow-500">
+          No game selected yet.
+        </div>
+      </motion.div>
     );
   }
 
-  const GameUIComponent = gameUIRegistry[gameId];
+  const PlayerGameUIComponent = playerGameUIRegistry[gameId];
 
   return (
     <motion.div
@@ -40,14 +43,14 @@ const PlayerGame = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-neutral sup-min-nav relative z-0 p-4 min-h-screen"
+      className="bg-neutral sup-min-nav relative z-0 min-h-screen"
     >
-      {!GameUIComponent ? (
-        <div className="text-center text-xl text-red-500">
-          No game UI registered for this game.
+      {!PlayerGameUIComponent ? (
+        <div className="text-center text-xl text-red-500 p-8">
+          No player UI registered for this game.
         </div>
       ) : (
-        <GameUIComponent session={session} />
+        <PlayerGameUIComponent session={session} />
       )}
     </motion.div>
   );
