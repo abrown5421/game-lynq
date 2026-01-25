@@ -256,7 +256,7 @@ const IpodWarPlayerGameUI = ({ session }: Props) => {
             <div className="bg-accent/10 rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-3">Current Standings</h3>
               <div className="space-y-2">
-                {Object.entries(scores)
+                {[...Object.entries(scores)]
                   .sort(([, a], [, b]) => (b as number) - (a as number))
                   .map(([pId, score], i) => {
                     const p = session.players.find(pl => pl.userId === pId || pl.unId === pId);
