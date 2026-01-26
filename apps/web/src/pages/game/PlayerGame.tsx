@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import { useGetSessionByIdQuery } from '../../app/store/api/sessionsApi';
 import Loader from '../../features/loader/Loader';
-import { playerGameUIRegistry } from '../games/playerGameUIRegistry';
+import { playerRegistry } from '../games/playerRegistry';
 
 const PlayerGame = () => {
   const { id, playerId } = useParams<{ id: string; playerId: string }>();
@@ -35,7 +35,7 @@ const PlayerGame = () => {
     );
   }
 
-  const PlayerGameUIComponent = playerGameUIRegistry[gameId];
+  const PlayerGameUIComponent = playerRegistry[gameId];
 
   return (
     <motion.div

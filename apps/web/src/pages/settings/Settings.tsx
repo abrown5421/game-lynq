@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { useGetSessionByIdQuery } from "../../app/store/api/sessionsApi";
 import Loader from "../../features/loader/Loader";
-import { gameSettingsRegistry } from "../games/gameSettingsRegistry";
+import { settingsRegistry } from "../games/settingsRegistry";
 
 const Settings = () => {
   const { id } = useParams<{ id: string }>();
@@ -29,7 +29,7 @@ const Settings = () => {
     );
   }
 
-  const GameSettingsComponent = gameSettingsRegistry[gameId];
+  const GameSettingsComponent = settingsRegistry[gameId];
 
   return (
     <motion.div

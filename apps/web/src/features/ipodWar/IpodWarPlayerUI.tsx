@@ -10,7 +10,7 @@ interface Props {
   session: ISession;
 }
 
-const IpodWarPlayerGameUI = ({ session }: Props) => {
+const IpodWarPlayerUI = ({ session }: Props) => {
   const { playerId } = useParams<{ playerId: string }>();
   const [gameAction] = useGameActionMutation();
   const { refetch } = useGetSessionByIdQuery(session._id, {
@@ -289,4 +289,4 @@ const IpodWarPlayerGameUI = ({ session }: Props) => {
   );
 };
 
-export default IpodWarPlayerGameUI;
+export default IpodWarPlayerUI;
