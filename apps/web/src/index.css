@@ -55,6 +55,9 @@
   .btn-gray {
     @apply cursor-pointer flex w-full justify-center items-center px-4 py-2 border-2 border-transparent bg-gray-500 text-accent-contrast rounded-xl hover:bg-transparent hover:text-gray-500 hover:border-gray-500 transition-all;
   }
+  .btn-text {
+    @apply cursor-pointer flex w-full justify-center items-center text-primary hover:text-accent transition-all;
+  }
   .btn-disabled {
     @apply flex w-full justify-center items-center px-4 py-2 border-2 border-transparent 
            bg-gray-300 text-gray-500 rounded-xl 

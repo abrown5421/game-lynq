@@ -6,6 +6,7 @@ import { useAppDispatch } from '../../app/store/hooks';
 import { QRCodeSVG } from 'qrcode.react';
 import { openAlert } from '../../features/alert/alertSlice';
 import { useEffect, useState } from 'react';
+import { UserGroupIcon } from '@heroicons/react/24/outline';
 
 const Host = () => {
   const dispatch = useAppDispatch();
@@ -17,7 +18,9 @@ const Host = () => {
   const [deleteSession] = useDeleteSessionMutation();
   const [startGame, { isLoading: isStarting }] = useStartGameMutation();
   const [prevPlayerCount, setPrevPlayerCount] = useState(0);
-
+  const url = new URL(import.meta.url);
+  const origin = url.origin;
+  
   useEffect(() => {
     if (!session?.players) return;
 
@@ -146,8 +149,11 @@ const Host = () => {
 
           <p className="text-sm text-neutral-contrast/60 text-center max-w-sm">
             Players can scan this QR code or visit{' '}
-            <span className="font-mono bg-neutral3/50 px-2 py-1 rounded text-primary">
-              /join/{session.code}
+            <span onClick={() => {
+              
+              window.open(`${origin}/join/${session.code}`)
+            }} className="font-mono btn-text">
+              {origin}/join/{session.code}
             </span>
           </p>
 
@@ -180,7 +186,9 @@ const Host = () => {
 
           {players.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center space-y-4 py-12">
-              <div className="text-6xl opacity-30">👥</div>
+              <div className="text-6xl opacity-30">
+                <UserGroupIcon className='h-35 w-35' />
+              </div>
               <p className="text-neutral-contrast/50 text-lg">Waiting for players to join...</p>
             </div>
           ) : (
