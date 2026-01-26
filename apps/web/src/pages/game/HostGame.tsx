@@ -2,9 +2,9 @@ import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import { useGetSessionByIdQuery } from '../../app/store/api/sessionsApi';
 import Loader from '../../features/loader/Loader';
-import { gameUIRegistry } from '../games/gameUIRegistry';
+import { hostRegistry } from '../games/hostRegistry';
 
-const Game = () => {
+const HostGame = () => {
   const { id } = useParams<{ id: string }>();
 
   const { data: session, isLoading } = useGetSessionByIdQuery(id!, {
@@ -35,7 +35,7 @@ const Game = () => {
     );
   }
 
-  const GameUIComponent = gameUIRegistry[gameId];
+  const GameUIComponent = hostRegistry[gameId];
 
   return (
     <motion.div
@@ -56,4 +56,4 @@ const Game = () => {
   );
 };
 
-export default Game;
+export default HostGame;

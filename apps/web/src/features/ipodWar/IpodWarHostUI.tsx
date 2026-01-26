@@ -11,7 +11,7 @@ interface Props {
   session: ISession;
 }
 
-const IpodWarGameUI = ({ session }: Props) => {
+const IpodWarHostUI = ({ session }: Props) => {
   const [gameAction] = useGameActionMutation();
   const submissionAudio = new Audio("/assets/audio/ding.mp3");
   const prevSubmissionCountRef = useRef(0);
@@ -300,4 +300,4 @@ const IpodWarGameUI = ({ session }: Props) => {
   );
 };
 
-export default IpodWarGameUI;
+export default IpodWarHostUI;

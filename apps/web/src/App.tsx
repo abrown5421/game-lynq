@@ -16,7 +16,7 @@ import Host from "./pages/host/Host";
 import Join from "./pages/join/Join";
 import Games from "./pages/games/Games";
 import Settings from "./pages/settings/Settings";
-import Game from "./pages/game/Game";
+import HostGame from "./pages/game/HostGame";
 import PlayerGame from "./pages/game/PlayerGame";
 const App: React.FC = () => {
   const location = useLocation();
@@ -42,7 +42,7 @@ const App: React.FC = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile/:id" element={<Profile />} />{" "}
               {/* new routes inserted here */}
-              <Route path="/host/:id/game" element={<Game />} />
+              <Route path="/host/:id/game" element={<HostGame />} />
               <Route path="/join/:id/:playerId/game" element={<PlayerGame />} />
               <Route path="/join/*" element={<Join />} />
               <Route path="/host/:id" element={<Host />} />

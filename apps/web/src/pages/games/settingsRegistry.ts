@@ -2,7 +2,7 @@ import { ComponentType } from "react";
 import { ISession } from "../../types/session.types";
 import IpodWarSettings from "../../features/ipodWar/IpodWarSettings";
 
-export const gameSettingsRegistry: Record<
+export const settingsRegistry: Record<
   string,
   ComponentType<{ session: ISession }>
 > = {

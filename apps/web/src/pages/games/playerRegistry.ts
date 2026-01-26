@@ -1,10 +1,10 @@
 import { ComponentType } from "react";
 import { ISession } from "../../types/session.types";
-import IpodWarPlayerGameUI from "../../features/ipodWar/IpodWarPlayerGameUI";
+import IpodWarPlayerUI from "../../features/ipodWar/IpodWarPlayerUI";
 
 export const playerGameUIRegistry: Record<
   string,
   ComponentType<{ session: ISession }>
 > = {
-  "697408ea5d35a3062508ec49": IpodWarPlayerGameUI,
+  "697408ea5d35a3062508ec49": IpodWarPlayerUI,
 };
