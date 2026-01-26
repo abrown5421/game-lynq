@@ -39,12 +39,14 @@ const IpodWarSettings = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+
   const [gameAction] = useGameActionMutation();
   const [startGame] = useStartGameMutation();
-  const [loadingGame, setLoadingGame] = useState<boolean>(false);
+
+  const [loadingGame, setLoadingGame] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
-  const [trackCount, setTrackCount] = useState<number>(DEFAULT_TRACKS);
-  const [roundDuration, setRoundDuration] = useState<number>(DEFAULT_ROUND_DURATION);
+  const [trackCount, setTrackCount] = useState(DEFAULT_TRACKS);
+  const [roundDuration, setRoundDuration] = useState(DEFAULT_ROUND_DURATION);
 
   const [errors, setErrors] = useState({
     genre: '',
@@ -61,12 +63,12 @@ const IpodWarSettings = () => {
       valid = false;
     }
 
-    if (!trackCount || trackCount < MIN_TRACKS || trackCount > MAX_TRACKS) {
+    if (trackCount < MIN_TRACKS || trackCount > MAX_TRACKS) {
       newErrors.trackCount = `Tracks must be between ${MIN_TRACKS} and ${MAX_TRACKS}`;
       valid = false;
     }
 
-    if (!roundDuration || roundDuration < 5) {
+    if (roundDuration < 5) {
       newErrors.roundDuration = 'Round duration must be at least 5 seconds';
       valid = false;
     }
@@ -74,88 +76,72 @@ const IpodWarSettings = () => {
     setErrors(newErrors);
 
     if (!valid) {
-      dispatch(
-        openAlert({
-          open: true,
-          closeable: true,
-          severity: 'error',
-          message: 'Please fix the errors in the form',
-          anchor: { x: 'right', y: 'bottom' },
-        })
-      );
+      dispatch(openAlert({
+        open: true,
+        closeable: true,
+        severity: 'error',
+        message: 'Please fix the errors in the form',
+        anchor: { x: 'right', y: 'bottom' },
+      }));
     }
 
     return valid;
   };
 
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
   const handleStartGame = async () => {
-    setLoadingGame(true)
     if (!validate() || !id) return;
+    setLoadingGame(true);
 
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/integrations/itunes/search?genre=${selectedGenre}&trackCount=200`,
-        { headers: { "Accept": "application/json" } }
+        { headers: { Accept: "application/json" } }
       );
 
       const data = await response.json();
 
-      const allTracks = data.tracks.map((track: any) => ({
-        name: track.trackName,
-        artist: track.artistName,
-        previewUrl: track.previewUrl,
-        artwork: track.artworkUrl100,
-      }));
-
-      const shuffledTracks = shuffleArray(allTracks);
-      const selectedTracks = shuffledTracks.slice(0, trackCount);
+      const tracks = data.tracks
+        .sort(() => Math.random() - 0.5)
+        .slice(0, trackCount)
+        .map((t: any) => ({
+          name: t.trackName,
+          artist: t.artistName,
+          previewUrl: t.previewUrl,
+          artwork: t.artworkUrl100,
+        }));
 
       await gameAction({
         sessionId: id,
         action: "updateData",
         payload: {
           data: {
-            currentTrack: selectedTracks[0],
+            currentTrack: tracks[0],
+            tracks,
+            round: 0,
+            roundStartTime: Date.now(),
+            submissions: [],
             revealedAnswer: null,
             readyPlayers: [],
-            round: 0,
-            tracks: selectedTracks,
-            settings: {
-              genre: selectedGenre,
-              trackCount,
-              roundDuration,
-            },
-            submissions: [],
-            roundStartTime: Date.now(),
-            phase: 'playing',
-          }
-        }
+            phase: "playing",
+            settings: { genre: selectedGenre, trackCount, roundDuration },
+          },
+        },
       });
-      setLoadingGame(false)
-      await startGame(id);
 
+      await startGame(id);
       navigate(`/host/${id}/game`);
 
     } catch (err) {
       console.error(err);
-      dispatch(
-        openAlert({
-          open: true,
-          closeable: true,
-          severity: "error",
-          message: "Failed to fetch tracks. Please try again later.",
-          anchor: { x: "right", y: "bottom" },
-        })
-      );
+      dispatch(openAlert({
+        open: true,
+        closeable: true,
+        severity: "error",
+        message: "Failed to fetch tracks.",
+        anchor: { x: "right", y: "bottom" },
+      }));
+    } finally {
+      setLoadingGame(false);
     }
   };
 
@@ -167,110 +153,81 @@ const IpodWarSettings = () => {
       transition={{ duration: 0.25 }}
       className="bg-neutral text-neutral-contrast min-h-screen p-6"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="max-w-6xl mx-auto space-y-6">
 
-        <div className="flex flex-col gap-6">
+        <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-8 text-center">
+          <h1 className="text-4xl font-primary font-bold text-primary mb-2">
+            Ipod War Settings
+          </h1>
+          <p className="text-neutral-contrast/70">
+            Choose a genre and configure your game round.
+          </p>
+        </div>
 
+        <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">Ipod War</h1>
-            <p className="opacity-70 mt-2">
-              Choose a genre, set the number of tracks, and decide how long players
-              have to guess each song before time runs out.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label>Number of Tracks</label>
+            <label className="block mb-2 text-neutral-contrast/70">Number of Tracks</label>
             <input
               type="number"
+              value={trackCount}
               min={MIN_TRACKS}
               max={MAX_TRACKS}
-              value={trackCount}
-              onChange={(e) => {
-                setTrackCount(Number(e.target.value));
-                setErrors({ ...errors, trackCount: '' });
-              }}
-              className={`w-full rounded border bg-neutral p-2 
-                ${errors.trackCount ? 'border-red-500' : 'border-neutral-contrast'}
-              `}
+              onChange={(e) => setTrackCount(Number(e.target.value))}
+              className="input-primary w-full"
             />
-            {errors.trackCount && (
-              <span className="text-red-500 text-sm">{errors.trackCount}</span>
-            )}
+            {errors.trackCount && <p className="text-red-500 text-sm mt-1">{errors.trackCount}</p>}
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label>Round Duration (seconds)</label>
+          <div>
+            <label className="block mb-2 text-neutral-contrast/70">Round Duration (seconds)</label>
             <input
               type="number"
-              min={30}
               value={roundDuration}
-              onChange={(e) => {
-                setRoundDuration(Number(e.target.value));
-                setErrors({ ...errors, roundDuration: '' });
-              }}
-              className={`w-full rounded border bg-neutral p-2 
-                ${errors.roundDuration ? 'border-red-500' : 'border-neutral-contrast'}
-              `}
+              onChange={(e) => setRoundDuration(Number(e.target.value))}
+              className="input-primary w-full"
             />
-            {errors.roundDuration && (
-              <span className="text-red-500 text-sm">{errors.roundDuration}</span>
-            )}
+            {errors.roundDuration && <p className="text-red-500 text-sm mt-1">{errors.roundDuration}</p>}
+          </div>
+        </div>
+
+        <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6">
+          <h2 className="text-2xl font-primary font-bold text-primary mb-4">Select Genre</h2>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {GENRES.map((genre) => {
+              const isSelected = selectedGenre === genre.name;
+              return (
+                <button
+                  key={genre.name}
+                  onClick={() => setSelectedGenre(genre.name)}
+                  style={{
+                    backgroundImage: `url(${genre.image})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all
+                    ${isSelected ? 'border-primary scale-105' : 'border-neutral hover:border-primary'}
+                  `}
+                >
+                  <div className={`absolute inset-0 ${isSelected ? 'bg-neutral/80' : 'bg-neutral/60 hover:bg-neutral/80'}`} />
+                  <span className="relative z-10 text-xl font-bold text-white">
+                    {genre.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <button
-            onClick={handleStartGame}
-            className="mt-4 w-full px-6 py-3 rounded bg-primary text-white font-bold hover:brightness-110"
-          >
-            {loadingGame ? <Loader /> : "Start Game"}
-          </button>
-
+          {errors.genre && <p className="text-red-500 text-sm mt-3">{errors.genre}</p>}
         </div>
 
-        <div className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-2 lg:grid-cols-4">
-          {GENRES.map((genre) => {
-            const isSelected = selectedGenre === genre.name;
-            const hasError = errors.genre && !selectedGenre;
-
-            return (
-              <button
-                key={genre.name}
-                onClick={() => {
-                  setSelectedGenre(genre.name);
-                  setErrors({ ...errors, genre: '' });
-                }}
-                style={{
-                  backgroundImage: `url(${genre.image})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-                className={`
-                  relative w-full aspect-square border rounded overflow-hidden
-                  flex items-center justify-center text-white transition-all
-                  hover:border-primary hover:brightness-110
-                  ${
-                    isSelected
-                      ? "border-primary scale-105 brightness-110"
-                      : hasError
-                        ? "border-red-500"
-                        : "border-neutral-contrast"
-                  }
-                `}
-              >
-                <div className={`absolute inset-0 ${isSelected ? "bg-neutral/85" : "bg-neutral/65 hover:bg-neutral/85"}`} />
-                <span className="relative text-2xl font-bold z-10">
-                  {genre.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {errors.genre && (
-          <span className="text-red-500 text-sm col-span-full">
-            {errors.genre}
-          </span>
-        )}
+        <button
+          onClick={handleStartGame}
+          disabled={loadingGame}
+          className={loadingGame ? "btn-disabled w-full" : "btn-primary w-full"}
+        >
+          {loadingGame ? <Loader /> : "Start Game"}
+        </button>
 
       </div>
     </motion.div>

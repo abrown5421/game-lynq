@@ -136,7 +136,7 @@ const Join = () => {
 
   if (isJoining || isLeaving) {
     return (
-      <div className="w-screen h-screen bg-neutral-contrast flex items-center justify-center">
+      <div className="w-screen h-screen bg-neutral flex items-center justify-center">
         <Loader />
       </div>
     );
@@ -149,17 +149,21 @@ const Join = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-neutral text-neutral-contrast sup-min-nav relative z-0 min-h-screen p-4 flex flex-col justify-center items-center space-y-6"
+        className="bg-neutral text-neutral-contrast min-h-screen p-6 flex items-center justify-center"
       >
-        <div className="w-full max-w-lg bg-red-500/20 border-2 border-red-500 p-6 rounded-lg shadow-md flex flex-col items-center space-y-4 text-center">
-          <div className="text-4xl">⚠️</div>
-          <h2 className="text-2xl text-red-200 font-primary">Removed from Session</h2>
-          <p className="text-red-100">
-            You have been removed from the session by the host.
-          </p>
+        <div className="w-full max-w-lg bg-neutral2 rounded-xl border-2 border-red-500/30 p-8 flex flex-col items-center space-y-6">
+          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center border-2 border-red-500/30">
+            <span className="text-5xl">⚠️</span>
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-3xl font-primary font-bold text-red-400">Removed from Session</h2>
+            <p className="text-neutral-contrast/70">
+              You have been removed from the session by the host.
+            </p>
+          </div>
           <button
             onClick={handleReturnToJoin}
-            className="btn-primary mt-4 w-full"
+            className="btn-primary w-full"
           >
             Return to Join Screen
           </button>
@@ -174,131 +178,146 @@ const Join = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-neutral text-neutral-contrast sup-min-nav relative z-0 min-h-screen p-4 flex flex-col justify-center items-center space-y-6"
+      className="bg-neutral text-neutral-contrast min-h-screen p-6 flex items-center justify-center"
     >
-      {!session ? (
-        <div className="w-full max-w-lg bg-accent p-6 rounded-lg shadow-md flex flex-col items-center space-y-3 text-center">
-          <h2 className="text-2xl text-accent-contrast font-primary">Join Session</h2>
-          
-          {error && (
-            <div className="w-full bg-red-500/20 border border-red-500 text-red-200 px-3 py-2 rounded">
-              {error}
+      <div className="w-full max-w-lg">
+        {!session ? (
+          <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-8 space-y-6">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-primary font-bold text-primary">Join Session</h2>
+              <p className="text-neutral-contrast/70">Enter the room code to get started</p>
             </div>
-          )}
-
-          <input
-            type="text"
-            placeholder="Room Code"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            className="input-primary w-full mt-3"
-            maxLength={4}
-          />
-          <input
-            type="text"
-            placeholder="Your Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="input-primary w-full"
-          />
-          
-          {!isAuthenticated && (
-            <div className='flex flex-col w-full'>
-              <input
-                type="text"
-                placeholder="User Secret"
-                value={unId}
-                onChange={(e) => setUnId(e.target.value)}
-                className="input-primary w-full"
-              />
-              <div className='text-sm text-accent-contrast/80 mt-2'>
-                Enter a memorable secret code to rejoin if you get disconnected
+            
+            {error && (
+              <div className="bg-red-500/20 border-2 border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
               </div>
-            </div>
-          )}
-          
-          <button
-            onClick={handleJoin}
-            disabled={!code || !name || (!isAuthenticated && !unId)}
-            className={`${!code || !name || (!isAuthenticated && !unId) ? 'btn-disabled cursor-not-allowed' : 'btn-primary'} mt-3`}
-          >
-            Join Session
-          </button>
-        </div>
-      ) : (
-        <div className='w-full max-w-lg'>
-        <div className="bg-accent p-6 space-y-4 w-full rounded-t-md flex flex-col justify-center items-center">
-          <h2 className="text-2xl text-accent-contrast">
-            Welcome to room {code}, {name}!
-          </h2>
-          
-          {error && (
-            <div className="w-full bg-red-500/20 border border-red-500 text-red-200 px-3 py-2 rounded">
-              {error}
-            </div>
-          )}
+            )}
 
-          {isEditingName && (
-            <div className="w-full space-y-2">
-              <input
-                type="text"
-                placeholder="New Name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="input-primary w-full"
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setIsEditingName(false);
-                    setNewName("");
-                    setError("");
-                  }}
-                  className="btn-gray flex-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateName}
-                  disabled={isUpdating || !newName}
-                  className="btn-primary flex-1"
-                >
-                  {isUpdating ? 'Updating...' : 'Save'}
-                </button>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Room Code</label>
+                <input
+                  type="text"
+                  placeholder="Enter 4-digit code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  className="input-primary w-full text-center text-2xl font-mono tracking-widest"
+                  maxLength={4}
+                />
               </div>
-            </div>
-          )}
 
-          <div className='text-sm text-accent-contrast/80 text-center my-4'>
-            <Loader />
+              <div>
+                <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Your Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input-primary w-full"
+                />
+              </div>
+              
+              {!isAuthenticated && (
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">User Secret</label>
+                  <input
+                    type="text"
+                    placeholder="Enter a memorable code"
+                    value={unId}
+                    onChange={(e) => setUnId(e.target.value)}
+                    className="input-primary w-full"
+                  />
+                  <p className="text-xs text-neutral-contrast/50 mt-2">
+                    This helps you rejoin if you get disconnected
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={handleJoin}
+              disabled={!code || !name || (!isAuthenticated && !unId)}
+              className={`w-full ${!code || !name || (!isAuthenticated && !unId) ? 'btn-disabled' : 'btn-primary'}`}
+            >
+              Join Session
+            </button>
           </div>
-          
-          <p className="text-s text-accent-contrast text-center">
-            Waiting for the host to start the game...
-          </p>
+        ) : (
+          <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 overflow-hidden">
+            <div className="p-8 space-y-6">
+              <div className="text-center space-y-2">
+                <h2 className="text-3xl font-primary font-bold text-primary">
+                  Welcome, {name}!
+                </h2>
+                <p className="text-neutral-contrast/70">Room Code: <span className="font-mono text-primary">{code}</span></p>
+              </div>
+              
+              {error && (
+                <div className="bg-red-500/20 border-2 border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
-        </div>
-        <div className="w-full p-3 gap-3 flex flex-row bg-neutral-contrast/90 rounded-b-md">
-          <button
-            onClick={() => {
-              setNewName(name);
-              setIsEditingName(true);
-            }}
-            className="btn-primary"
-          >
-            Change Name
-          </button>
-          <button
-            onClick={handleLeave}
-            className="btn-error"
-          >
-            Exit Session
-          </button>
-        </div>
-          
-          
-        </div>
-      )}
+              {isEditingName ? (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="New Name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="input-primary w-full"
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        setIsEditingName(false);
+                        setNewName("");
+                        setError("");
+                      }}
+                      className="btn-gray"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleUpdateName}
+                      disabled={isUpdating || !newName}
+                      className={isUpdating || !newName ? 'btn-disabled' : 'btn-primary'}
+                    >
+                      {isUpdating ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-neutral3 rounded-lg p-6 border-2 border-neutral-contrast/10 flex flex-col items-center space-y-4">
+                  <Loader />
+                  <p className="text-neutral-contrast/70 text-center">
+                    Waiting for the host to start the game...
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-neutral3 p-4 border-t-2 border-neutral-contrast/10 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  setNewName(name);
+                  setIsEditingName(true);
+                }}
+                className="btn-secondary"
+              >
+                Change Name
+              </button>
+              <button
+                onClick={handleLeave}
+                className="btn-error"
+              >
+                Exit Session
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };

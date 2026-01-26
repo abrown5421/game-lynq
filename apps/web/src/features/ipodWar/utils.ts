@@ -1,12 +1,22 @@
 import { PlayerSubmission } from './types';
 
-const normalizeString = (str: string): string => {
+const stripMetadata = (str: string): string => {
   return str
+    .replace(/\s*[\(\[].*(remaster(ed)?|version|edit|mono|stereo).*(\)|\])?/gi, '')
+    .replace(/\s*[\(\[]?(feat\.?|featuring|ft\.?|with)\s+.*?[\)\]]?/gi, '')
+    .replace(/\s*-\s*(feat\.?|featuring|ft\.?|with).*$/gi, '')
+    .trim();
+};
+
+const normalizeString = (str: string): string => {
+  const stripped = stripMetadata(str);
+
+  return stripped
     .toLowerCase()
     .trim()
     .replace(/[^\w\s]/g, '')
     .replace(/\s+/g, ' ');
-};
+}
 
 const levenshteinDistance = (a: string, b: string): number => {
   const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
@@ -31,6 +41,7 @@ const levenshteinDistance = (a: string, b: string): number => {
   return matrix[a.length][b.length];
 };
 
+
 export const checkAnswer = (guess: string, correct: string): boolean => {
   const normalizedGuess = normalizeString(guess);
   const normalizedCorrect = normalizeString(correct);
@@ -44,7 +55,7 @@ export const checkAnswer = (guess: string, correct: string): boolean => {
   ) {
     return true;
   }
-  
+
   const distance = levenshteinDistance(normalizedGuess, normalizedCorrect);
   const threshold = Math.floor(normalizedCorrect.length / 3);
   if (distance <= threshold) return true;
@@ -60,28 +71,35 @@ export const calculateScore = (
 ): number => {
   const trackCorrect = checkAnswer(submission.trackGuess, correctTrack);
   const artistCorrect = checkAnswer(submission.artistGuess, correctArtist);
-  
-  let points = 0;
-  
+
+  if (!trackCorrect && !artistCorrect) return 0;
+
+  let basePoints = 0;
   if (trackCorrect && artistCorrect) {
-    points = 1000;
-  } else if (trackCorrect || artistCorrect) {
-    points = 500; 
+    basePoints = 800;
   } else {
-    return 0; 
+    basePoints = 400;
   }
-  
-  const sortedSubmissions = [...allSubmissions].sort(
+  const correctSubmissions = allSubmissions.filter(s => {
+    const t = checkAnswer(s.trackGuess, correctTrack);
+    const a = checkAnswer(s.artistGuess, correctArtist);
+    return t || a;
+  });
+
+  const sortedCorrect = [...correctSubmissions].sort(
     (a, b) => a.submittedAt - b.submittedAt
   );
-  
-  const position = sortedSubmissions.findIndex(
+
+  const position = sortedCorrect.findIndex(
     s => s.playerId === submission.playerId
   );
-  
-  const speedBonus = Math.max(0, 500 - (position * 100));
-  
-  return points + speedBonus;
+
+  const speedBonuses = [200, 150, 100, 50];
+  const speedBonus = position >= 0 && position < speedBonuses.length
+    ? speedBonuses[position]
+    : 0;
+
+  return basePoints + speedBonus;
 };
 
 export const processSubmissions = (
@@ -102,3 +120,7 @@ export const processSubmissions = (
     };
   });
 };
+
+export function getHighResArtwork(url: string, size = 600) {
+    return url.replace(/\/\d+x\d+bb\.jpg$/, `/${size}x${size}bb.jpg`);
+}
