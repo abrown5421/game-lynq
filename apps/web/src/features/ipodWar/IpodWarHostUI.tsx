@@ -245,7 +245,7 @@ const IpodWarHostUI = ({ session }: Props) => {
                 {submissions.map((sub, i) => (
                   <div key={i} className="bg-neutral3 p-4 rounded-lg border-2 border-neutral-contrast/10 flex justify-between items-center">
                     <span className="font-medium text-lg">{sub.playerName}</span>
-                    <span className="text-primary font-bold">✓ Submitted</span>
+                    <span className="text-primary font-bold">Submitted</span>
                   </div>
                 ))}
               </div>
