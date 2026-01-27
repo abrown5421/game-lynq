@@ -49,7 +49,7 @@ const GradientBanner = ({
       <div className="w-full h-full" style={{ background: gradient }} />
 
       {editable && (
-        <div className="absolute top-3 right-3 z-20">
+        <div className="absolute top-3 right-3 z-20 shadow-2xl">
           <AnimatePresence mode="wait">
             {!editorOpen && (
               <motion.button
@@ -84,13 +84,13 @@ const GradientBanner = ({
                       setGradient(savedGradient);
                       setEditorOpen(false);
                     }}
-                    className="px-3 py-1.5 rounded-md bg-neutral-700 hover:bg-neutral-600 transition"
+                    className="btn-gray"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
-                    className="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 transition"
+                    className="btn-primary"
                   >
                     Save
                   </button>

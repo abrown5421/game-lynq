@@ -154,6 +154,17 @@ export const sessionsApi = baseApi.injectEndpoints({
         { type: "Session", id: sessionId },
       ],
     }),
+
+    getSessionsByUser: builder.query<ISession[], string>({
+      query: (userId) => `/sessions/user/${userId}`,
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ _id }) => ({ type: "Session" as const, id: _id })),
+              { type: "Session", id: "LIST" },
+            ]
+          : [{ type: "Session", id: "LIST" }],
+    }),
   }),
 });
 
@@ -173,4 +184,5 @@ export const {
   useStartGameMutation,
   useGameActionMutation,
   useEndGameMutation,
+  useGetSessionsByUserQuery,
 } = sessionsApi;
