@@ -4,6 +4,7 @@ interface CustomerInfoFormProps {
   firstName: string;
   lastName: string;
   email: string;
+  bio: string;
   errors?: {
     firstName?: string;
     lastName?: string;
@@ -17,6 +18,7 @@ const CustomerInfoForm = ({
   firstName,
   lastName,
   email,
+  bio,
   errors,
   onChange,
   emailDisabled = false,
@@ -50,6 +52,13 @@ const CustomerInfoForm = ({
           error={errors?.email}
           className="md:col-span-2"
           type="email"
+        />
+        <FormInput
+          name="bio"
+          value={bio}
+          onChange={onChange}
+          placeholder="Bio"
+          className="md:col-span-2"
         />
       </div>
     </div>

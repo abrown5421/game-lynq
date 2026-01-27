@@ -14,6 +14,7 @@ import CustomerInfoForm from "../../features/forms/CustomerInfoForm";
 import SensitiveInfoForm from "../../features/forms/SensitiveInfoForm";
 import { useLoginMutation } from "../../app/store/api/authApi";
 import { Address } from "../../types/user.types";
+import { useGetSessionsByUserQuery } from "../../app/store/api/sessionsApi";
 
 const DEFAULT_GRADIENT = "linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%)";
 
@@ -29,6 +30,7 @@ interface ProfileFormState {
   firstName: string;
   lastName: string;
   email: string;
+  bio: string;
   mailingAddress: Address;
   billingAddress: Address;
   sameAddress: boolean;
@@ -46,7 +48,11 @@ const Profile = () => {
     isLoading: isUserLoading,
     error,
   } = useGetUserByIdQuery(params?.id!);
-  
+  const {
+    data: hostedSessions,
+    isLoading: isSessionsLoading,
+    error: sessionsError,
+  } = useGetSessionsByUserQuery(params?.id!);
   const tabsRef = useRef<Record<string, HTMLButtonElement | null>>({});
   const tabsContainerRef = useRef<HTMLDivElement>(null);
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
@@ -67,6 +73,7 @@ const Profile = () => {
     firstName: "",
     lastName: "",
     email: "",
+    bio: "",
     mailingAddress: emptyAddress,
     billingAddress: emptyAddress,
     sameAddress: true,
@@ -83,6 +90,7 @@ const Profile = () => {
       firstName: user.firstName ?? "",
       lastName: user.lastName ?? "",
       email: user.email ?? "",
+      bio: user.bio ?? "",
       mailingAddress: user.mailingAddress ?? emptyAddress,
       billingAddress: user.billingAddress ?? emptyAddress,
       sameAddress: user.sameAddress ?? true,
@@ -134,18 +142,18 @@ const Profile = () => {
     }
   }, [form.mailingAddress, form.sameAddress]);
 
-  const handleBannerSave = async () => {
+  const handleBannerSave = async (newGradient: string) => {
     try {
-      setSavedGradient(gradient);
-      setEditorOpen(false);
+      setSavedGradient(newGradient);
+      setGradient(newGradient);
 
       if (!authUser.user?._id) return;
 
       await updateUser({
         id: authUser.user._id,
-        data: { profileBanner: { gradient } },
+        data: { profileBanner: { gradient: newGradient } },
       }).unwrap();
-      
+        
       dispatch(
         openAlert({
           open: true,
@@ -166,7 +174,7 @@ const Profile = () => {
         })
       );
     }
-  };
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -248,6 +256,7 @@ const Profile = () => {
     if (changedFields.has("firstName")) updates.firstName = form.firstName;
     if (changedFields.has("lastName")) updates.lastName = form.lastName;
     if (changedFields.has("email")) updates.email = form.email;
+    if (changedFields.has("bio")) updates.bio = form.bio;
     if (changedFields.has("mailingAddress")) updates.mailingAddress = form.mailingAddress;
     if (changedFields.has("billingAddress")) updates.billingAddress = form.billingAddress;
     if (changedFields.has("sameAddress")) updates.sameAddress = form.sameAddress;
@@ -292,8 +301,11 @@ const Profile = () => {
       );
     }
   };
+    
+  const isLoading = isUserLoading || isSessionsLoading;
+  const isError = !!error || !!sessionsError;
 
-  if (isUserLoading) {
+  if (isLoading) {
     return (
       <div className="bg-neutral sup-min-nav relative z-0 p-4 flex justify-center items-center">
         <Loader />
@@ -301,7 +313,7 @@ const Profile = () => {
     );
   }
 
-  if (error || !user) {
+  if (isError || !user) {
     return (
       <div className="bg-neutral sup-min-nav relative z-0 flex flex-col justify-center items-center p-4 sm:p-8">
         <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-red-500 font-primary text-center">
@@ -314,6 +326,9 @@ const Profile = () => {
     );
   }
 
+  const activeSessions = hostedSessions?.filter(s => s.status !== "ended") || [];
+  const inactiveSessions = hostedSessions?.filter(s => s.status === "ended") || [];
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -323,14 +338,12 @@ const Profile = () => {
       className="bg-neutral sup-min-nav relative z-0 flex flex-col items-center"
     >
       <div className="relative w-full">
-        <div className="w-full h-32 sm:h-44 md:h-52 lg:h-56" style={{ background: gradient }}>
-          <GradientBanner
-            gradient={savedGradient}
-            editable={ownProf}
-            onSave={handleBannerSave}
-            height={220}
-          />
-        </div>
+        <GradientBanner
+          gradient={savedGradient}
+          editable={ownProf}
+          onSave={handleBannerSave}
+          height={220}
+        />
         <div
           className="flex flex-col w-full max-w-6xl mx-auto z-25 px-4"
           style={{ marginTop: -60 }}
@@ -419,9 +432,43 @@ const Profile = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
+                      className="flex flex-col gap-4"
                     >
-                      <div className="text-neutral-400 text-sm sm:text-base">
-                        Welcome to {user.firstName}'s profile home page.
+                      <div className="bg-neutral3-contrast rounded-lg p-6 space-y-4">
+                        <h2 className="text-xl font-semibold font-primary">
+                          Active Sessions
+                        </h2>
+                        {activeSessions.length ? (
+                          <ul className="space-y-2">
+                            {activeSessions.map((s) => (
+                              <li key={s._id} className="p-2 bg-accent rounded flex justify-between items-center">
+                                <span className="font-semibold text-accent-contrast">{s.code}</span>
+                                <span className={`${s.status === 'playing' ? "text-green-400" : "text-accent-contrast"}`}>{s.status}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-neutral-500 text-sm">No active sessions.</p>
+                        )}
+                      </div>
+
+
+                      <div className="bg-neutral3-contrast rounded-lg p-6 space-y-4">
+                        <h2 className="text-xl font-semibold font-primary">
+                          Inactive Sessions
+                        </h2>
+                        {inactiveSessions.length ? (
+                          <ul className="space-y-2">
+                            {inactiveSessions.map((s) => (
+                              <li key={s._id} className="p-2 bg-neutral-800 rounded flex justify-between items-center">
+                                <span className="font-semibold">{s.code}</span>
+                                <span className="text-sm text-neutral-400">{new Date(s.createdAt).toLocaleString()}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-neutral-500 text-sm">No inactive sessions.</p>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -438,6 +485,7 @@ const Profile = () => {
                         firstName={form.firstName}
                         lastName={form.lastName}
                         email={form.email}
+                        bio={form.bio}   
                         onChange={handleChange}
                         emailDisabled
                       />
