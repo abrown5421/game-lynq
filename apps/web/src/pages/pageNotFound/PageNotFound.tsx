@@ -74,7 +74,7 @@ const PageNotFound = () => {
           variants={glitchVariants}
           initial="initial"
           animate="glitch"
-          className="relative"
+          className="relative hidden md:block"
         >
           <div className="text-primary text-9xl font-primary my-2 relative z-10">404</div>
           <div className="absolute inset-0 text-accent text-9xl font-primary my-2 opacity-30 blur-sm">404</div>
