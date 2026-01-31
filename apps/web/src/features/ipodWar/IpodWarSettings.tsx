@@ -28,6 +28,10 @@ const GENRES: Genre[] = [
   { name: "Lo-Fi", image: "https://images.unsplash.com/photo-1558843196-6a1ed3250d80?q=80&w=1632&auto=format&fit=crop" },
   { name: "House", image: "https://images.unsplash.com/photo-1615743893538-c502749d04a0?q=80&w=733&auto=format&fit=crop" },
   { name: "Techno", image: "https://images.unsplash.com/photo-1578736641330-3155e606cd40?q=80&w=1170&auto=format&fit=crop" },
+  { name: "60s", image: "https://images.unsplash.com/photo-1632264172518-ef7b05fd4705?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8NjBzfGVufDB8fDB8fHww" },
+  { name: "70s", image: "https://plus.unsplash.com/premium_photo-1664391937325-1bec1f8ae750?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fDcwcyUyMGRpc2NvfGVufDB8fDB8fHww" },
+  { name: "80s", image: "https://images.unsplash.com/photo-1524779709304-40b5a3560c60?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ODBzfGVufDB8fDB8fHww" },
+  { name: "90s", image: "https://images.unsplash.com/photo-1621940760699-8fe82b462dfa?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8TmlydmFuYXxlbnwwfHwwfHx8MA%3D%3D" },
 ];
 
 const MIN_TRACKS = 20;
