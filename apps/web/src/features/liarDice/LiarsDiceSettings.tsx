@@ -189,14 +189,14 @@ const LiarsDiceSettings = () => {
         <div className="bg-neutral2 rounded-xl border-2 border-primary/30 p-6">
           <h2 className="text-2xl font-primary font-bold text-primary mb-4">How to Play</h2>
           <div className="space-y-3 text-neutral-contrast/80">
-            <p>🎲 Each player rolls dice secretly. Only you can see your own dice.</p>
-            <p>🗣️ On your turn, make a bid about ALL dice in play (e.g., "Five 4s")</p>
-            <p>📈 Each bid must be higher: more dice OR higher face value</p>
-            <p>❌ Or call "Liar!" if you think the previous bid is impossible</p>
-            <p>🎯 When challenged, all dice are revealed. Wrong party loses a die!</p>
-            <p>🏆 Last player with dice remaining wins!</p>
+            <p>Each player rolls dice secretly. Only you can see your own dice.</p>
+            <p>On your turn, make a bid about ALL dice in play (e.g., "Five 4s")</p>
+            <p>Each bid must be higher: more dice OR higher face value</p>
+            <p>Or call "Liar!" if you think the previous bid is impossible</p>
+            <p>When challenged, all dice are revealed. Wrong party loses a die!</p>
+            <p>Last player with dice remaining wins!</p>
             {onesAreWild && (
-              <p className="text-primary">⭐ 1s are wild and count as any number!</p>
+              <p className="text-primary">1s are wild and count as any number!</p>
             )}
           </div>
         </div>

@@ -135,19 +135,63 @@ const LiarsDiceHostUI = ({ session }: Props) => {
     }
   };
 
-  const DiceDisplay = ({ dice }: { dice: Die[] }) => (
-    <div className="flex gap-2 flex-wrap justify-center">
-      {dice.map(die => (
+  // CSS-based dice with dots
+  const DiceWithDots = ({ value }: { value: number }) => {
+    const renderDots = () => {
+      const dots = [];
+      const positions = {
+        1: [[50, 50]],
+        2: [[25, 25], [75, 75]],
+        3: [[25, 25], [50, 50], [75, 75]],
+        4: [[25, 25], [75, 25], [25, 75], [75, 75]],
+        5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
+        6: [[25, 25], [75, 25], [25, 50], [75, 50], [25, 75], [75, 75]],
+      };
+
+      const dotPositions = positions[value as keyof typeof positions] || [];
+      
+      return dotPositions.map((pos, i) => (
         <div
-          key={die.id}
-          className="w-12 h-12 bg-white rounded-lg border-2 border-neutral-contrast/20 flex items-center justify-center text-2xl font-bold shadow-md"
-        >
-          {die.value === 1 ? '⚀' : die.value === 2 ? '⚁' : die.value === 3 ? '⚂' : 
-           die.value === 4 ? '⚃' : die.value === 5 ? '⚄' : '⚅'}
+          key={i}
+          className="absolute w-2 h-2 bg-gray-800 rounded-full"
+          style={{
+            left: `${pos[0]}%`,
+            top: `${pos[1]}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      ));
+    };
+
+    return (
+      <div className="w-12 h-12 bg-white rounded-lg border-2 border-gray-300 shadow-md relative flex-shrink-0">
+        {renderDots()}
+      </div>
+    );
+  };
+
+  const DiceDisplay = ({ dice }: { dice: Die[] }) => {
+    if (!dice || dice.length === 0) {
+      return (
+        <div className="text-center text-neutral-contrast/50 py-4">
+          No dice to display
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
+
+    return (
+      <div className="flex gap-2 flex-wrap justify-center">
+        {dice.map(die => (
+          <DiceWithDots key={die.id} value={die.value} />
+        ))}
+      </div>
+    );
+  };
+
+  const getDieFaceIcon = (value: number) => {
+    const icons = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+    return icons[value - 1] || value.toString();
+  };
 
   return (
     <motion.div
@@ -178,9 +222,7 @@ const LiarsDiceHostUI = ({ session }: Props) => {
               </h2>
               <div className="text-center">
                 <div className="text-5xl font-bold text-primary mb-2">
-                  {currentBid.quantity} × {currentBid.faceValue === 1 ? '⚀' : 
-                   currentBid.faceValue === 2 ? '⚁' : currentBid.faceValue === 3 ? '⚂' : 
-                   currentBid.faceValue === 4 ? '⚃' : currentBid.faceValue === 5 ? '⚄' : '⚅'}
+                  {currentBid.quantity} × {getDieFaceIcon(currentBid.faceValue)}
                 </div>
                 <p className="text-neutral-contrast/70">
                   by <span className="font-bold">{currentBid.playerName}</span>
@@ -201,9 +243,7 @@ const LiarsDiceHostUI = ({ session }: Props) => {
                   <div key={i} className="bg-neutral3 p-4 rounded-lg border-2 border-neutral-contrast/10 flex justify-between items-center">
                     <span className="font-medium">{bid.playerName}</span>
                     <span className="text-xl font-bold text-primary">
-                      {bid.quantity} × {bid.faceValue === 1 ? '⚀' : 
-                       bid.faceValue === 2 ? '⚁' : bid.faceValue === 3 ? '⚂' : 
-                       bid.faceValue === 4 ? '⚃' : bid.faceValue === 5 ? '⚄' : '⚅'}
+                      {bid.quantity} × {getDieFaceIcon(bid.faceValue)}
                     </span>
                   </div>
                 ))}
@@ -269,9 +309,7 @@ const LiarsDiceHostUI = ({ session }: Props) => {
           <div className="bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl border-2 border-primary/40 p-8 text-center">
             <h2 className="text-2xl font-primary font-bold mb-4">The Bid</h2>
             <div className="text-6xl font-bold text-primary mb-4">
-              {roundResult.bid.quantity} × {roundResult.bid.faceValue === 1 ? '⚀' : 
-               roundResult.bid.faceValue === 2 ? '⚁' : roundResult.bid.faceValue === 3 ? '⚂' : 
-               roundResult.bid.faceValue === 4 ? '⚃' : roundResult.bid.faceValue === 5 ? '⚄' : '⚅'}
+              {roundResult.bid.quantity} × {getDieFaceIcon(roundResult.bid.faceValue)}
             </div>
             <div className="text-3xl font-bold mb-2">
               Actual Count: <span className="text-primary">{roundResult.actualCount}</span>

@@ -195,7 +195,7 @@ const LiarsDicePlayerUI = ({ session }: Props) => {
       return dotPositions.map((pos, i) => (
         <div
           key={i}
-          className="absolute w-3 h-3 bg-gray-800 rounded-full"
+          className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 bg-gray-800 rounded-full"
           style={{
             left: `${pos[0]}%`,
             top: `${pos[1]}%`,
@@ -206,7 +206,7 @@ const LiarsDicePlayerUI = ({ session }: Props) => {
     };
 
     return (
-      <div className="w-16 h-16 bg-white rounded-xl border-2 border-gray-300 shadow-lg relative">
+      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-lg sm:rounded-xl border-2 border-gray-300 shadow-lg relative flex-shrink-0">
         {renderDots()}
       </div>
     );
@@ -222,7 +222,7 @@ const LiarsDicePlayerUI = ({ session }: Props) => {
     }
 
     return (
-      <div className="flex gap-3 flex-wrap justify-center">
+      <div className="flex gap-2 sm:gap-3 flex-wrap justify-center items-center max-w-full">
         {dice.map(die => (
           <DiceWithDots key={die.id} value={die.value} />
         ))}
@@ -322,13 +322,13 @@ const LiarsDicePlayerUI = ({ session }: Props) => {
                     <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">
                       Face Value
                     </label>
-                    <div className="grid grid-cols-6 gap-2">
+                    <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
                       {[1, 2, 3, 4, 5, 6].map(face => (
                         <button
                           key={face}
                           onClick={() => setFaceValue(face)}
                           disabled={isSubmitting}
-                          className={`p-3 rounded-lg border-2 transition-all ${
+                          className={`p-1.5 sm:p-2 rounded-lg border-2 transition-all flex items-center justify-center ${
                             faceValue === face
                               ? 'bg-primary/30 border-primary/50 scale-105'
                               : 'bg-neutral3 border-neutral-contrast/10 hover:border-primary/30'
