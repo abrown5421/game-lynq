@@ -23,6 +23,7 @@ const IpodWarPlayerUI = ({ session }: Props) => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [currentRound, setCurrentRound] = useState<number>(-1);
 
   if (!session.gameState?.data) {
     return (
@@ -39,6 +40,16 @@ const IpodWarPlayerUI = ({ session }: Props) => {
   const player = session.players.find(p => p.userId === playerId || p.unId === playerId);
   const playerName = player?.name || 'Unknown';
   const playerScore = scores[playerId || ''] || 0;
+
+  // Reset inputs when a new round starts
+  useEffect(() => {
+    if (phase === 'playing' && round !== currentRound) {
+      setTrackGuess('');
+      setArtistGuess('');
+      setHasSubmitted(false);
+      setCurrentRound(round);
+    }
+  }, [phase, round, currentRound]);
 
   useEffect(() => {
     const submitted = submissions.some(s => s.playerId === playerId);
@@ -139,28 +150,52 @@ const IpodWarPlayerUI = ({ session }: Props) => {
               <form onSubmit={handleSubmit} className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Track Name</label>
-                  <input
-                    type="text"
-                    value={trackGuess}
-                    onChange={(e) => setTrackGuess(e.target.value)}
-                    placeholder="Enter track name..."
-                    className="input-primary w-full"
-                    disabled={isSubmitting}
-                    autoComplete="off"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={trackGuess}
+                      onChange={(e) => setTrackGuess(e.target.value)}
+                      placeholder="Enter track name..."
+                      className="input-primary w-full pr-12"
+                      disabled={isSubmitting}
+                      autoComplete="off"
+                    />
+                    {trackGuess && (
+                      <button
+                        type="button"
+                        onClick={() => setTrackGuess('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-contrast/10 rounded-full transition-colors"
+                        disabled={isSubmitting}
+                      >
+                        <XMarkIcon className="h-5 w-5 text-neutral-contrast/50 hover:text-neutral-contrast" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Artist Name</label>
-                  <input
-                    type="text"
-                    value={artistGuess}
-                    onChange={(e) => setArtistGuess(e.target.value)}
-                    placeholder="Enter artist name..."
-                    className="input-primary w-full"
-                    disabled={isSubmitting}
-                    autoComplete="off"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={artistGuess}
+                      onChange={(e) => setArtistGuess(e.target.value)}
+                      placeholder="Enter artist name..."
+                      className="input-primary w-full pr-12"
+                      disabled={isSubmitting}
+                      autoComplete="off"
+                    />
+                    {artistGuess && (
+                      <button
+                        type="button"
+                        onClick={() => setArtistGuess('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-contrast/10 rounded-full transition-colors"
+                        disabled={isSubmitting}
+                      >
+                        <XMarkIcon className="h-5 w-5 text-neutral-contrast/50 hover:text-neutral-contrast" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <button
