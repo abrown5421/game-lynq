@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import {
   useGetUserByIdQuery,
@@ -8,7 +8,7 @@ import {
 } from "../../app/store/api/usersApi";
 import { openAlert } from "../../features/alert/alertSlice";
 import Loader from "../../features/loader/Loader";
-import { AtSymbolIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { AtSymbolIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/solid";
 import GradientBanner from "../../features/gradientBanner/GradientBanner";
 import CustomerInfoForm from "../../features/forms/CustomerInfoForm";
 import SensitiveInfoForm from "../../features/forms/SensitiveInfoForm";
@@ -41,6 +41,7 @@ interface ProfileFormState {
 
 const Profile = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const authUser = useAppSelector((state) => state.auth);
   const [deleteSession] = useDeleteSessionMutation()
   const params = useParams();
@@ -356,6 +357,14 @@ const Profile = () => {
     }
   };
 
+  const handleGoToSession = (status: string, _id: string) => {
+    if (status === 'lobby') {
+      navigate(`/host/${_id}`)
+    } else {
+      navigate(`/host/${_id}/game`)
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -470,18 +479,24 @@ const Profile = () => {
                             {activeSessions.map((s) => (
                               <li
                                 key={s._id}
-                                className="p-2 bg-accent rounded flex justify-between items-center"
+                                className="p-2 bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 overflow-hidden flex justify-between items-center"
                               >
                                 <span className="font-semibold text-accent-contrast">{s.code}</span>
                                 <div>
                                   <span
-                                    className={`mr-5 ${
+                                    className={`${
                                       s.status === "playing" ? "text-green-400" : "text-accent-contrast"
                                     }`}
                                   >
-                                    {s.status}
+                                    ( {s.status} ) 
                                   </span>
-
+                                  <button
+                                    onClick={() => handleGoToSession(s.status, s._id)}
+                                    className="transition"
+                                    title="Delete session"
+                                  >
+                                    <EyeIcon className="mx-5 w-4 h-4 text-accent cursor-pointer" />
+                                  </button>
                                   <button
                                     onClick={() => handleDeleteSession(s._id)}
                                     className="hover:text-red-400 transition"

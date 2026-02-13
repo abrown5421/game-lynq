@@ -50,19 +50,23 @@ router.post('/webhooks/:provider', async (req, res) => {
 });
 
 router.get("/itunes/search", async (req, res) => {
-  const { genre, trackCount } = req.query;
+  const { term, limit } = req.query;
 
-  if (!genre) return res.status(400).json({ error: "Genre is required" });
+  if (!term) {
+    return res.status(400).json({ error: "Search term is required" });
+  }
 
   const manager = IntegrationManager.getInstance();
   const iTunes = manager.get<any>("itunes");
 
-  if (!iTunes) return res.status(500).json({ error: "iTunes provider not found" });
+  if (!iTunes) {
+    return res.status(500).json({ error: "iTunes provider not found" });
+  }
 
   try {
     const result = await iTunes.searchTracks({
-      term: genre as string,
-      limit: Number(trackCount) || 60,
+      term: term as string,
+      limit: Number(limit) || 60,
     });
 
     if (!result.success) {
@@ -71,8 +75,10 @@ router.get("/itunes/search", async (req, res) => {
 
     res.json({ tracks: result.data });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to fetch tracks" });
   }
 });
+
 
 export default router;

@@ -36,12 +36,12 @@ const IpodWarPlayerUI = ({ session }: Props) => {
   const gameData = session.gameState.data as IpodWarGameData;
   const scores = session.gameState.scores || {};
   const { phase, round, tracks, settings, submissions, roundStartTime, revealedAnswer } = gameData;
+  const { guessArtist } = settings;
 
   const player = session.players.find(p => p.userId === playerId || p.unId === playerId);
   const playerName = player?.name || 'Unknown';
   const playerScore = scores[playerId || ''] || 0;
 
-  // Reset inputs when a new round starts
   useEffect(() => {
     if (phase === 'playing' && round !== currentRound) {
       setTrackGuess('');
@@ -74,8 +74,14 @@ const IpodWarPlayerUI = ({ session }: Props) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!playerId || (!trackGuess.trim() && !artistGuess.trim()) || hasSubmitted || isSubmitting) {
-        return;
+    if (
+      !playerId ||
+      !trackGuess.trim() ||
+      (guessArtist && !artistGuess.trim()) ||
+      hasSubmitted ||
+      isSubmitting
+    ) {
+      return;
     }
 
     setIsSubmitting(true);
@@ -91,7 +97,7 @@ const IpodWarPlayerUI = ({ session }: Props) => {
         playerId: actualPlayerId,
         playerName,
         trackGuess: trackGuess.trim(),
-        artistGuess: artistGuess.trim(),
+        artistGuess: guessArtist ? artistGuess.trim() : "",
         submittedAt: Date.now(),
       };
 
@@ -112,6 +118,13 @@ const IpodWarPlayerUI = ({ session }: Props) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // FIXED: Proper validation logic for submit button
+  const isSubmitDisabled = () => {
+    if (isSubmitting || !trackGuess.trim()) return true;
+    if (guessArtist && !artistGuess.trim()) return true;
+    return false;
   };
 
   return (
@@ -172,40 +185,37 @@ const IpodWarPlayerUI = ({ session }: Props) => {
                     )}
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Artist Name</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={artistGuess}
-                      onChange={(e) => setArtistGuess(e.target.value)}
-                      placeholder="Enter artist name..."
-                      className="input-primary w-full pr-12"
-                      disabled={isSubmitting}
-                      autoComplete="off"
-                    />
-                    {artistGuess && (
-                      <button
-                        type="button"
-                        onClick={() => setArtistGuess('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-contrast/10 rounded-full transition-colors"
+                {guessArtist && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-neutral-contrast/70">Artist Name</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={artistGuess}
+                        onChange={(e) => setArtistGuess(e.target.value)}
+                        placeholder="Enter artist name..."
+                        className="input-primary w-full pr-12"
                         disabled={isSubmitting}
-                      >
-                        <XMarkIcon className="h-5 w-5 text-neutral-contrast/50 hover:text-neutral-contrast" />
-                      </button>
-                    )}
+                        autoComplete="off"
+                      />
+                      {artistGuess && (
+                        <button
+                          type="button"
+                          onClick={() => setArtistGuess('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-contrast/10 rounded-full transition-colors"
+                          disabled={isSubmitting}
+                        >
+                          <XMarkIcon className="h-5 w-5 text-neutral-contrast/50 hover:text-neutral-contrast" />
+                        </button>
+                      )}
+                    </div>
+                  
                   </div>
-                </div>
-
+                )}
                 <button
                   type="submit"
-                  disabled={(!trackGuess.trim() && !artistGuess.trim()) || isSubmitting}
-                  className={`w-full ${
-                    (!trackGuess.trim() && !artistGuess.trim()) || isSubmitting
-                      ? 'btn-disabled'
-                      : 'btn-primary'
-                  }`}
+                  disabled={isSubmitDisabled()}
+                  className={`w-full ${isSubmitDisabled() ? 'btn-disabled' : 'btn-primary'}`}
                 >
                   {isSubmitting ? <Loader /> : 'Submit Answer'}
                 </button>
@@ -252,8 +262,13 @@ const IpodWarPlayerUI = ({ session }: Props) => {
                 );
               }
 
-              const isFullCorrect = mySubmission.trackCorrect && mySubmission.artistCorrect;
-              const isPartialCorrect = mySubmission.trackCorrect || mySubmission.artistCorrect;
+              // FIXED: Correct logic based on guessArtist setting
+              const isFullCorrect = guessArtist 
+                ? (mySubmission.trackCorrect && mySubmission.artistCorrect)
+                : mySubmission.trackCorrect;
+              const isPartialCorrect = guessArtist
+                ? (mySubmission.trackCorrect || mySubmission.artistCorrect)
+                : false; // No partial credit when artist guessing is disabled
               
               return (
                 <div className={`bg-neutral2 rounded-xl border-2 p-8 ${
@@ -284,17 +299,20 @@ const IpodWarPlayerUI = ({ session }: Props) => {
                         )}
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-contrast/70">Your artist guess:</span>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{mySubmission.artistGuess}</span>
-                        {mySubmission.artistCorrect ? (
-                          <CheckIcon className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <XMarkIcon className="h-5 w-5 text-red-500" />
-                        )}
+                    {/* FIXED: Only show artist row if artist guessing is enabled */}
+                    {guessArtist && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-neutral-contrast/70">Your artist guess:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{mySubmission.artistGuess}</span>
+                          {mySubmission.artistCorrect ? (
+                            <CheckIcon className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <XMarkIcon className="h-5 w-5 text-red-500" />
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );

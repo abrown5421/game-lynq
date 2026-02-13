@@ -2,7 +2,7 @@ import { PlayerSubmission } from './types';
 
 const stripMetadata = (str: string): string => {
   return str
-    .replace(/\s*[\(\[].*(remaster(ed)?|version|edit|mono|stereo).*(\)|\])?/gi, '')
+    .replace(/\s*[\(\[].*?(remaster(ed)?|version|edit|mono|stereo).*?[\)\]]/gi, '')
     .replace(/\s*[\(\[]?(feat\.?|featuring|ft\.?|with)\s+.*?[\)\]]?/gi, '')
     .replace(/\s*-\s*(feat\.?|featuring|ft\.?|with).*$/gi, '')
     .trim();
@@ -16,10 +16,12 @@ const normalizeString = (str: string): string => {
     .trim()
     .replace(/[^\w\s]/g, '')
     .replace(/\s+/g, ' ');
-}
+};
 
 const levenshteinDistance = (a: string, b: string): number => {
-  const matrix = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  const matrix = Array.from({ length: a.length + 1 }, () =>
+    Array(b.length + 1).fill(0)
+  );
 
   for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
   for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
@@ -41,7 +43,6 @@ const levenshteinDistance = (a: string, b: string): number => {
   return matrix[a.length][b.length];
 };
 
-
 export const checkAnswer = (guess: string, correct: string): boolean => {
   const normalizedGuess = normalizeString(guess);
   const normalizedCorrect = normalizeString(correct);
@@ -58,32 +59,33 @@ export const checkAnswer = (guess: string, correct: string): boolean => {
 
   const distance = levenshteinDistance(normalizedGuess, normalizedCorrect);
   const threshold = Math.floor(normalizedCorrect.length / 3);
-  if (distance <= threshold) return true;
 
-  return false;
+  return distance <= threshold;
 };
 
 export const calculateScore = (
   submission: PlayerSubmission,
   correctTrack: string,
   correctArtist: string,
-  allSubmissions: PlayerSubmission[]
+  allSubmissions: PlayerSubmission[],
+  guessArtist: boolean = true
 ): number => {
   const trackCorrect = checkAnswer(submission.trackGuess, correctTrack);
-  const artistCorrect = checkAnswer(submission.artistGuess, correctArtist);
+  const artistCorrect = guessArtist ? checkAnswer(submission.artistGuess, correctArtist) : true;
 
-  if (!trackCorrect && !artistCorrect) return 0;
-
-  let basePoints = 0;
-  if (trackCorrect && artistCorrect) {
-    basePoints = 800;
+  // If artist guessing is disabled, only check track
+  if (!guessArtist) {
+    if (!trackCorrect) return 0;
   } else {
-    basePoints = 400;
+    if (!trackCorrect && !artistCorrect) return 0;
   }
+
+  const basePoints = trackCorrect && artistCorrect ? 800 : 400;
+
   const correctSubmissions = allSubmissions.filter(s => {
     const t = checkAnswer(s.trackGuess, correctTrack);
-    const a = checkAnswer(s.artistGuess, correctArtist);
-    return t || a;
+    const a = guessArtist ? checkAnswer(s.artistGuess, correctArtist) : true;
+    return t || (guessArtist && a);
   });
 
   const sortedCorrect = [...correctSubmissions].sort(
@@ -95,9 +97,10 @@ export const calculateScore = (
   );
 
   const speedBonuses = [200, 150, 100, 50];
-  const speedBonus = position >= 0 && position < speedBonuses.length
-    ? speedBonuses[position]
-    : 0;
+  const speedBonus =
+    position >= 0 && position < speedBonuses.length
+      ? speedBonuses[position]
+      : 0;
 
   return basePoints + speedBonus;
 };
@@ -105,13 +108,20 @@ export const calculateScore = (
 export const processSubmissions = (
   submissions: PlayerSubmission[],
   correctTrack: string,
-  correctArtist: string
+  correctArtist: string,
+  guessArtist: boolean = true
 ): PlayerSubmission[] => {
   return submissions.map(submission => {
     const trackCorrect = checkAnswer(submission.trackGuess, correctTrack);
-    const artistCorrect = checkAnswer(submission.artistGuess, correctArtist);
-    const points = calculateScore(submission, correctTrack, correctArtist, submissions);
-    
+    const artistCorrect = guessArtist ? checkAnswer(submission.artistGuess, correctArtist) : true;
+    const points = calculateScore(
+      submission,
+      correctTrack,
+      correctArtist,
+      submissions,
+      guessArtist
+    );
+
     return {
       ...submission,
       trackCorrect,
@@ -121,6 +131,7 @@ export const processSubmissions = (
   });
 };
 
-export function getHighResArtwork(url: string, size = 600) {
-    return url.replace(/\/\d+x\d+bb\.jpg$/, `/${size}x${size}bb.jpg`);
+export function getHighResArtwork(url: string, size = 600): string {
+  if (!url) return url;
+  return url.replace(/\/\d+x\d+bb\.jpg$/, `/${size}x${size}bb.jpg`);
 }

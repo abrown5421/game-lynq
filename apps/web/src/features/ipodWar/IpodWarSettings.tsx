@@ -6,34 +6,6 @@ import { useGameActionMutation, useStartGameMutation } from '../../app/store/api
 import { useNavigate, useParams } from 'react-router-dom';
 import Loader from '../loader/Loader';
 
-type Genre = {
-  name: string;
-  image: string;
-};
-
-const GENRES: Genre[] = [
-  { name: "Pop", image: "https://images.unsplash.com/photo-1512830414785-9928e23475dc?q=80&w=1170&auto=format&fit=crop" },
-  { name: "Hip-Hop", image: "https://images.unsplash.com/photo-1601643157091-ce5c665179ab?q=80&w=1172&auto=format&fit=crop" },
-  { name: "Rock", image: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=1170&auto=format&fit=crop" },
-  { name: "Alternative", image: "https://plus.unsplash.com/premium_photo-1739485104667-77ffcc398a81?q=80&w=1170&auto=format&fit=crop" },
-  { name: "Indie", image: "https://images.unsplash.com/photo-1481886756534-97af88ccb438?q=80&w=1632&auto=format&fit=crop" },
-  { name: "Electronic", image: "https://images.unsplash.com/photo-1616709676522-9861033271a2?q=80&w=627&auto=format&fit=crop" },
-  { name: "Dance", image: "https://images.unsplash.com/photo-1588540111535-2b7ef1eb7833?q=80&w=1172&auto=format&fit=crop" },
-  { name: "R&B", image: "https://images.unsplash.com/photo-1535146851324-6571dc3f2672?q=80&w=1170&auto=format&fit=crop" },
-  { name: "Jazz", image: "https://images.unsplash.com/flagged/photo-1569231290377-072234d3ee57?q=80&w=687&auto=format&fit=crop" },
-  { name: "Blues", image: "https://images.unsplash.com/photo-1543372742-312f414ace57?q=80&w=687&auto=format&fit=crop" },
-  { name: "Country", image: "https://images.unsplash.com/photo-1507404684477-09c7f690976a?q=80&w=1170&auto=format&fit=crop" },
-  { name: "Folk", image: "https://images.unsplash.com/photo-1521337581100-8ca9a73a5f79?q=80&w=1077&auto=format&fit=crop" },
-  { name: "Latin", image: "https://images.unsplash.com/photo-1634137622977-34ef2eda193f?q=80&w=1167&auto=format&fit=crop" },
-  { name: "Lo-Fi", image: "https://images.unsplash.com/photo-1558843196-6a1ed3250d80?q=80&w=1632&auto=format&fit=crop" },
-  { name: "House", image: "https://images.unsplash.com/photo-1615743893538-c502749d04a0?q=80&w=733&auto=format&fit=crop" },
-  { name: "Techno", image: "https://images.unsplash.com/photo-1578736641330-3155e606cd40?q=80&w=1170&auto=format&fit=crop" },
-  { name: "60s", image: "https://images.unsplash.com/photo-1632264172518-ef7b05fd4705?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8NjBzfGVufDB8fDB8fHww" },
-  { name: "70s", image: "https://plus.unsplash.com/premium_photo-1664391937325-1bec1f8ae750?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fDcwcyUyMGRpc2NvfGVufDB8fDB8fHww" },
-  { name: "80s", image: "https://images.unsplash.com/photo-1524779709304-40b5a3560c60?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ODBzfGVufDB8fDB8fHww" },
-  { name: "90s", image: "https://images.unsplash.com/photo-1621940760699-8fe82b462dfa?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8TmlydmFuYXxlbnwwfHwwfHx8MA%3D%3D" },
-];
-
 const MIN_TRACKS = 20;
 const MAX_TRACKS = 200;
 const DEFAULT_TRACKS = 60;
@@ -48,22 +20,22 @@ const IpodWarSettings = () => {
   const [startGame] = useStartGameMutation();
 
   const [loadingGame, setLoadingGame] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [trackCount, setTrackCount] = useState(DEFAULT_TRACKS);
   const [roundDuration, setRoundDuration] = useState(DEFAULT_ROUND_DURATION);
-
+  const [guessArtist, setGuessArtist] = useState(true);
   const [errors, setErrors] = useState({
-    genre: '',
+    searchTerm: '',
     trackCount: '',
     roundDuration: '',
   });
 
   const validate = () => {
     let valid = true;
-    const newErrors = { genre: '', trackCount: '', roundDuration: '' };
+    const newErrors = { searchTerm: '', trackCount: '', roundDuration: '' };
 
-    if (!selectedGenre) {
-      newErrors.genre = 'Please select a genre';
+    if (!searchTerm.trim()) {
+      newErrors.searchTerm = 'Please enter a search term';
       valid = false;
     }
 
@@ -97,8 +69,9 @@ const IpodWarSettings = () => {
     setLoadingGame(true);
 
     try {
+      console.log(`${import.meta.env.VITE_API_URL}/integrations/itunes/search?term=${encodeURIComponent(searchTerm)}&limit=200`)
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/integrations/itunes/search?genre=${selectedGenre}&trackCount=200`,
+        `${import.meta.env.VITE_API_URL}/integrations/itunes/search?term=${encodeURIComponent(searchTerm)}&limit=200`,
         { headers: { Accept: "application/json" } }
       );
 
@@ -127,7 +100,7 @@ const IpodWarSettings = () => {
             revealedAnswer: null,
             readyPlayers: [],
             phase: "playing",
-            settings: { genre: selectedGenre, trackCount, roundDuration },
+            settings: { searchTerm, trackCount, roundDuration, guessArtist },
           },
         },
       });
@@ -164,8 +137,33 @@ const IpodWarSettings = () => {
             Ipod War Settings
           </h1>
           <p className="text-neutral-contrast/70">
-            Choose a genre and configure your game round.
+            Search for any artist, genre, or vibe.
           </p>
+        </div>
+
+        <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-6">
+          <div>
+            <label className="block mb-2 text-neutral-contrast/70">Search for Anything</label>
+            <input
+              type="text"
+              placeholder='Try: "Pop", "Taylor Swift", "Summer jams of the 2000s"'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-primary w-full"
+            />
+            {errors.searchTerm && <p className="text-red-500 text-sm mt-1">{errors.searchTerm}</p>}
+          </div>
+          <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
+            <label className="flex items-center justify-between">
+              <span className="text-neutral-contrast/70">Enable Artist Guessing</span>
+              <input
+                type="checkbox"
+                checked={guessArtist}
+                onChange={(e) => setGuessArtist(e.target.checked)}
+                className="toggle"
+              />
+            </label>
+          </div>
         </div>
 
         <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-6">
@@ -192,37 +190,6 @@ const IpodWarSettings = () => {
             />
             {errors.roundDuration && <p className="text-red-500 text-sm mt-1">{errors.roundDuration}</p>}
           </div>
-        </div>
-
-        <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6">
-          <h2 className="text-2xl font-primary font-bold text-primary mb-4">Select Genre</h2>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {GENRES.map((genre) => {
-              const isSelected = selectedGenre === genre.name;
-              return (
-                <button
-                  key={genre.name}
-                  onClick={() => setSelectedGenre(genre.name)}
-                  style={{
-                    backgroundImage: `url(${genre.image})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all
-                    ${isSelected ? 'border-primary scale-105' : 'border-neutral hover:border-primary'}
-                  `}
-                >
-                  <div className={`absolute inset-0 ${isSelected ? 'bg-neutral/80' : 'bg-neutral/60 hover:bg-neutral/80'}`} />
-                  <span className="relative z-10 text-xl font-bold text-white">
-                    {genre.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {errors.genre && <p className="text-red-500 text-sm mt-3">{errors.genre}</p>}
         </div>
 
         <button
