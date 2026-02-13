@@ -8,13 +8,13 @@ import {
 } from "../../app/store/api/usersApi";
 import { openAlert } from "../../features/alert/alertSlice";
 import Loader from "../../features/loader/Loader";
-import { AtSymbolIcon } from "@heroicons/react/24/solid";
+import { AtSymbolIcon, TrashIcon } from "@heroicons/react/24/solid";
 import GradientBanner from "../../features/gradientBanner/GradientBanner";
 import CustomerInfoForm from "../../features/forms/CustomerInfoForm";
 import SensitiveInfoForm from "../../features/forms/SensitiveInfoForm";
 import { useLoginMutation } from "../../app/store/api/authApi";
 import { Address } from "../../types/user.types";
-import { useGetSessionsByUserQuery } from "../../app/store/api/sessionsApi";
+import { useDeleteSessionMutation, useGetSessionsByUserQuery } from "../../app/store/api/sessionsApi";
 
 const DEFAULT_GRADIENT = "linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%)";
 
@@ -42,6 +42,7 @@ interface ProfileFormState {
 const Profile = () => {
   const dispatch = useAppDispatch();
   const authUser = useAppSelector((state) => state.auth);
+  const [deleteSession] = useDeleteSessionMutation()
   const params = useParams();
   const {
     data: user,
@@ -329,6 +330,32 @@ const Profile = () => {
   const activeSessions = hostedSessions?.filter(s => s.status !== "ended") || [];
   const inactiveSessions = hostedSessions?.filter(s => s.status === "ended") || [];
   
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId).unwrap();
+
+      dispatch(
+        openAlert({
+          open: true,
+          closeable: true,
+          severity: "success",
+          message: "Session deleted successfully",
+          anchor: { x: "right", y: "bottom" },
+        })
+      );
+    } catch (err) {
+      dispatch(
+        openAlert({
+          open: true,
+          closeable: true,
+          severity: "error",
+          message: "Failed to delete session",
+          anchor: { x: "right", y: "bottom" },
+        })
+      );
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -441,9 +468,28 @@ const Profile = () => {
                         {activeSessions.length ? (
                           <ul className="space-y-2">
                             {activeSessions.map((s) => (
-                              <li key={s._id} className="p-2 bg-accent rounded flex justify-between items-center">
+                              <li
+                                key={s._id}
+                                className="p-2 bg-accent rounded flex justify-between items-center"
+                              >
                                 <span className="font-semibold text-accent-contrast">{s.code}</span>
-                                <span className={`${s.status === 'playing' ? "text-green-400" : "text-accent-contrast"}`}>{s.status}</span>
+                                <div>
+                                  <span
+                                    className={`mr-5 ${
+                                      s.status === "playing" ? "text-green-400" : "text-accent-contrast"
+                                    }`}
+                                  >
+                                    {s.status}
+                                  </span>
+
+                                  <button
+                                    onClick={() => handleDeleteSession(s._id)}
+                                    className="hover:text-red-400 transition"
+                                    title="Delete session"
+                                  >
+                                    <TrashIcon className="w-4 h-4 text-red-500 cursor-pointer" />
+                                  </button>
+                                </div>
                               </li>
                             ))}
                           </ul>
