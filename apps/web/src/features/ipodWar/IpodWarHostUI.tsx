@@ -1,3 +1,4 @@
+
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { IpodWarGameData } from './types';
@@ -12,7 +13,6 @@ interface Props {
 }
 
 const IpodWarHostUI = ({ session }: Props) => {
-  const topRef = useRef<HTMLDivElement>(null);
   const [gameAction] = useGameActionMutation();
   const submissionAudio = new Audio("/assets/audio/ding.mp3");
   const prevSubmissionCountRef = useRef(0);
@@ -123,11 +123,12 @@ const IpodWarHostUI = ({ session }: Props) => {
         console.warn('No submissions found after refetch!');
       }
       
+      // FIXED: Pass the guessArtist setting to processSubmissions
       const processedSubmissions = processSubmissions(
         latestSubmissions,
         currentTrack.name,
         currentTrack.artist,
-        settings.guessArtist ?? true 
+        settings.guessArtist ?? true // Default to true if not set
       );
 
       const currentScores = freshSession.gameState?.scores || {};
@@ -201,12 +202,6 @@ const IpodWarHostUI = ({ session }: Props) => {
     );
   }
 
-  useEffect(() => {
-    if (phase === 'revealing') {
-      topRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [phase]);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -216,7 +211,7 @@ const IpodWarHostUI = ({ session }: Props) => {
       className="bg-neutral text-neutral-contrast min-h-screen p-6"
     >
       <audio ref={audioRef} />
-      <div ref={topRef} />
+
       {phase === 'playing' && (
         <div className="max-w-5xl mx-auto space-y-6">
           <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-8 text-center">
