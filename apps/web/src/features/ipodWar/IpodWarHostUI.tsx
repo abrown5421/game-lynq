@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import { IpodWarGameData } from './types';
-import { processSubmissions } from './utils';
+import { processSubmissions, getHighResArtwork } from './utils';
 import { useGameActionMutation, useGetSessionByIdQuery } from '../../app/store/api/sessionsApi';
 import { ISession } from '../../types/session.types';
 import Loader from '../loader/Loader';
@@ -33,7 +33,7 @@ const IpodWarHostUI = ({ session }: Props) => {
 
   const gameData = session.gameState.data as IpodWarGameData;
   const scores = session.gameState.scores || {};
-  const { currentTrack, phase, round, tracks, settings = { roundDuration: 30 }, submissions, roundStartTime } = gameData;
+  const { currentTrack, phase, round, tracks, settings = { roundDuration: 30, guessArtist: true }, submissions, roundStartTime } = gameData;
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -42,7 +42,7 @@ const IpodWarHostUI = ({ session }: Props) => {
     const prevCount = prevSubmissionCountRef.current;
 
     if (currentCount > prevCount) {
-        submissionAudio.play().catch(err => console.warn("Failed to play submission audio:", err));
+      submissionAudio.play().catch(err => console.warn("Failed to play submission audio:", err));
     }
 
     prevSubmissionCountRef.current = currentCount;
@@ -122,14 +122,17 @@ const IpodWarHostUI = ({ session }: Props) => {
         console.warn('No submissions found after refetch!');
       }
       
+      // FIXED: Pass the guessArtist setting to processSubmissions
       const processedSubmissions = processSubmissions(
         latestSubmissions,
         currentTrack.name,
-        currentTrack.artist
+        currentTrack.artist,
+        settings.guessArtist ?? true // Default to true if not set
       );
 
       const currentScores = freshSession.gameState?.scores || {};
       const newScores = { ...currentScores };
+
       processedSubmissions.forEach(sub => {
         newScores[sub.playerId] = (newScores[sub.playerId] || 0) + (sub.points || 0);
       });
@@ -196,10 +199,6 @@ const IpodWarHostUI = ({ session }: Props) => {
         <Loader />
       </div>
     );
-  }
-
-  function getHighResArtwork(url: string, size = 600) {
-    return url.replace(/\/\d+x\d+bb\.jpg$/, `/${size}x${size}bb.jpg`);
   }
 
   return (
@@ -304,15 +303,17 @@ const IpodWarHostUI = ({ session }: Props) => {
                           <XMarkIcon className="h-5 w-5 text-red-500" />
                         )}
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-neutral-contrast/70">Artist:</span>
-                        <span className="font-medium">{sub.artistGuess}</span>
-                        {sub.artistCorrect ? (
-                          <CheckIcon className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <XMarkIcon className="h-5 w-5 text-red-500" />
-                        )}
-                      </div>
+                      {settings.guessArtist && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-neutral-contrast/70">Artist:</span>
+                          <span className="font-medium">{sub.artistGuess}</span>
+                          {sub.artistCorrect ? (
+                            <CheckIcon className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <XMarkIcon className="h-5 w-5 text-red-500" />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

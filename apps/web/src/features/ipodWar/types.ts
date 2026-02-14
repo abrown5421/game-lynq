@@ -29,6 +29,7 @@ export interface IpodWarGameData {
     genre: string;
     trackCount: number;
     roundDuration: number;
+    guessArtist: boolean;
   };
   submissions: PlayerSubmission[];
   roundStartTime: number | null;
