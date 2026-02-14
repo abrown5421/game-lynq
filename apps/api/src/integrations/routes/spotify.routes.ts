@@ -220,6 +220,9 @@ export async function getValidAccessToken(userId: string): Promise<string | null
 
 router.get("/search", async (req, res) => {
   try {
+    console.log("=== Spotify Search Debug ===");
+    console.log("Cookies:", req.cookies);
+    console.log("Headers:", req.headers);
     const { query, limit = 10 } = req.query;
 
     if (!query) {

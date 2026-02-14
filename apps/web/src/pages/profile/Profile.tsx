@@ -471,8 +471,8 @@ const Profile = () => {
                       transition={{ duration: 0.2 }}
                       className="flex flex-col gap-4"
                     >
-                      <div className="bg-neutral3-contrast rounded-lg p-6 space-y-4">
-                        <h2 className="text-xl font-semibold font-primary">
+                      <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-4">
+                        <h2 className="text-xl font-primary font-bold text-primary mb-4">
                           Active Sessions
                         </h2>
                         {activeSessions.length ? (
@@ -480,7 +480,7 @@ const Profile = () => {
                             {activeSessions.map((s) => (
                               <li
                                 key={s._id}
-                                className="p-2 bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 overflow-hidden flex justify-between items-center"
+                                className="p-2 bg-neutral2 rounded-xl border-2 border-neutral-contrast/30 overflow-hidden flex justify-between items-center"
                               >
                                 <span className="font-semibold text-accent-contrast">{s.code}</span>
                                 <div>
@@ -515,8 +515,8 @@ const Profile = () => {
                       </div>
 
 
-                      <div className="bg-neutral3-contrast rounded-lg p-6 space-y-4">
-                        <h2 className="text-xl font-semibold font-primary">
+                      <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-4">
+                        <h2 className="text-xl font-primary font-bold text-primary mb-4">
                           Inactive Sessions
                         </h2>
                         {inactiveSessions.length ? (
