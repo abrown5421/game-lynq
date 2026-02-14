@@ -15,6 +15,7 @@ import SensitiveInfoForm from "../../features/forms/SensitiveInfoForm";
 import { useLoginMutation } from "../../app/store/api/authApi";
 import { Address } from "../../types/user.types";
 import { useDeleteSessionMutation, useGetSessionsByUserQuery } from "../../app/store/api/sessionsApi";
+import SpotifyConnection from '../../features/spotifyConnection/SpotifyConnection';
 
 const DEFAULT_GRADIENT = "linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%)";
 
@@ -554,6 +555,8 @@ const Profile = () => {
                       <SensitiveInfoForm
                         onVerifyPassword={handleVerifyPassword}
                       />
+
+                      <SpotifyConnection />
 
                       <button 
                         className="btn-primary w-full sm:w-auto text-sm sm:text-base" 

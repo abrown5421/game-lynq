@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { IntegrationManager } from '../core/integration-manager';
 import { ITunesProvider } from '../providers/itunes.provider';
+import { SpotifyProvider } from '../providers/spotify.provider';
 import { loadIntegrationConfigs } from '../core/config-loader';
+import spotifyRoutes from './spotify.routes';
 
 const router = Router();
 
@@ -13,7 +15,17 @@ const iTunesConfig = configs["itunes"] || {
   enabled: true,
 };
 
+const spotifyConfig = configs["spotify"] || {
+  name: "spotify",
+  apiKey: process.env.SPOTIFY_CLIENT_ID,
+  apiSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  enabled: !!process.env.SPOTIFY_CLIENT_ID && !!process.env.SPOTIFY_CLIENT_SECRET,
+};
+
 manager.register("itunes", new ITunesProvider(iTunesConfig));
+manager.register("spotify", new SpotifyProvider(spotifyConfig));
+
+router.use('/spotify', spotifyRoutes);
 
 router.get('/health', async (req, res) => {
   const manager = IntegrationManager.getInstance();
@@ -79,6 +91,5 @@ router.get("/itunes/search", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tracks" });
   }
 });
-
 
 export default router;
