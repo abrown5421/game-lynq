@@ -20,26 +20,17 @@ const IpodWarSettings = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
   const [gameAction] = useGameActionMutation();
   const [startGame] = useStartGameMutation();
   const { data: spotifyStatus } = useGetSpotifyStatusQuery();
-  
   const [searchSpotify, { data: searchResults, isLoading: isSearching }] = useLazySearchSpotifyQuery();
   const [getArtistTracks, { isLoading: isLoadingArtist }] = useLazyGetArtistTracksQuery();
   const [getPlaylistTracks, { isLoading: isLoadingPlaylist }] = useLazyGetPlaylistTracksQuery();
-
   const [loadingGame, setLoadingGame] = useState(false);
   const [musicProvider, setMusicProvider] = useState<MusicProvider>('itunes');
-  
-  // iTunes fields
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Spotify fields
   const [spotifyQuery, setSpotifyQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState<{ type: 'artist' | 'playlist'; id: string; name: string } | null>(null);
-  
-  // Common fields
   const [trackCount, setTrackCount] = useState(DEFAULT_TRACKS);
   const [roundDuration, setRoundDuration] = useState(DEFAULT_ROUND_DURATION);
   const [guessArtist, setGuessArtist] = useState(true);
@@ -123,7 +114,6 @@ const IpodWarSettings = () => {
       let tracks: any[] = [];
 
       if (musicProvider === 'itunes') {
-        // iTunes flow (existing)
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/integrations/itunes/search?term=${encodeURIComponent(searchTerm)}&limit=200`,
           { headers: { Accept: "application/json" }, credentials: 'include' }
@@ -141,7 +131,6 @@ const IpodWarSettings = () => {
             artwork: t.artworkUrl100,
           }));
       } else if (musicProvider === 'spotify' && selectedSource) {
-        // Spotify flow (new)
         let tracksData;
         
         if (selectedSource.type === 'artist') {
@@ -220,12 +209,10 @@ const IpodWarSettings = () => {
           </p>
         </div>
 
-        {/* Music Provider Selection */}
         <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
           <label className="block text-lg font-medium text-neutral-contrast">Music Source</label>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* iTunes Option */}
             <button
               onClick={() => setMusicProvider('itunes')}
               className={`p-6 rounded-xl border-2 transition-all text-left ${
@@ -252,7 +239,6 @@ const IpodWarSettings = () => {
               </div>
             </button>
 
-            {/* Spotify Option */}
             <button
               onClick={() => canUseSpotify && setMusicProvider('spotify')}
               disabled={!canUseSpotify}
@@ -289,13 +275,11 @@ const IpodWarSettings = () => {
             </button>
           </div>
 
-          {/* Spotify Connection Component */}
           {musicProvider === 'spotify' && !canUseSpotify && (
             <SpotifyConnection compact />
           )}
         </div>
 
-        {/* iTunes Search */}
         {musicProvider === 'itunes' && (
           <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
             <div>
@@ -312,7 +296,6 @@ const IpodWarSettings = () => {
           </div>
         )}
 
-        {/* Spotify Search */}
         {musicProvider === 'spotify' && canUseSpotify && (
           <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
             <div>
@@ -324,12 +307,12 @@ const IpodWarSettings = () => {
                   value={spotifyQuery}
                   onChange={(e) => setSpotifyQuery(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSpotifySearch()}
-                  className="input-primary flex-1"
+                  className="input-primary flex flex-8"
                 />
                 <button
                   onClick={handleSpotifySearch}
                   disabled={isSearching || !spotifyQuery.trim()}
-                  className={isSearching || !spotifyQuery.trim() ? 'btn-disabled px-6' : 'btn-primary px-6'}
+                  className={`flex flex-1 ${isSearching || !spotifyQuery.trim() ? 'btn-disabled px-6' : 'btn-primary px-6'}`}
                 >
                   {isSearching ? <Loader /> : <MagnifyingGlassIcon className="h-5 w-5" />}
                 </button>
@@ -337,7 +320,6 @@ const IpodWarSettings = () => {
               {errors.spotifyQuery && <p className="text-red-500 text-sm mt-1">{errors.spotifyQuery}</p>}
             </div>
 
-            {/* Selected Source */}
             {selectedSource && (
               <div className="bg-green-500/10 border-2 border-green-500/20 rounded-lg p-4">
                 <p className="text-sm text-neutral-contrast/70 mb-2">Selected Source:</p>
@@ -365,10 +347,8 @@ const IpodWarSettings = () => {
               </div>
             )}
 
-            {/* Search Results */}
             {searchResults && (
               <div className="space-y-4">
-                {/* Artists */}
                 {searchResults.artists.length > 0 && (
                   <div>
                     <h3 className="text-lg font-medium text-neutral-contrast mb-3">Artists</h3>
@@ -408,7 +388,6 @@ const IpodWarSettings = () => {
                   </div>
                 )}
 
-                {/* Playlists */}
                 {searchResults.playlists.length > 0 && (
                   <div>
                     <h3 className="text-lg font-medium text-neutral-contrast mb-3">Playlists</h3>
@@ -451,18 +430,29 @@ const IpodWarSettings = () => {
             )}
           </div>
         )}
-
-        {/* Game Settings */}
+        
         <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-4">
-          <label className="flex items-center justify-between">
-            <span className="text-neutral-contrast/70">Enable Artist Guessing</span>
-            <input
-              type="checkbox"
-              checked={guessArtist}
-              onChange={(e) => setGuessArtist(e.target.checked)}
-              className="toggle"
-            />
-          </label>
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-contrast/70">Artist Guessing</span>
+
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-neutral-contrast/70">
+                {guessArtist ? "ON" : "OFF"}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setGuessArtist(!guessArtist)}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors duration-300 
+                  ${guessArtist ? 'bg-primary' : 'bg-neutral3'}`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-300
+                    ${guessArtist ? 'translate-x-7' : 'translate-x-1'}`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-6 space-y-6">

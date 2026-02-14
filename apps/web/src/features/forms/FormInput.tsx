@@ -28,7 +28,7 @@ const FormInput = ({
       onChange={onChange}
       placeholder={placeholder}
       className={`input-primary ${
-        error ? "border-red-500" : "border-transparent"
+        error ? "border-red-500" : "unset"
       }`}
     />
     {error && <span className="text-red-500 text-sm mt-1">{error}</span>}
