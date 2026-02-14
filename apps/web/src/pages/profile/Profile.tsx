@@ -69,7 +69,7 @@ const Profile = () => {
   const tabs = ownProf ? (["Home", "Account", "Connections"] as const) : (["Home"] as const);
   const [updateUser, { isLoading: isSaving }] = useUpdateUserMutation();
   const [loginMutation] = useLoginMutation();
-  const [activeTab, setActiveTab] = useState<"Home" | "Account">("Home");
+  const [activeTab, setActiveTab] = useState<"Home" | "Account" | "Connections">("Home");
   const [passwordVerified, setPasswordVerified] = useState(false);
 
   const [form, setForm] = useState<ProfileFormState>({
@@ -567,7 +567,7 @@ const Profile = () => {
                       </button>
                     </motion.div>
                   )}
-                  {activeTab === "Account" && ownProf && (
+                  {activeTab === "Connections" && ownProf && (
                     <SpotifyConnection />
                   )}
                 </AnimatePresence>
