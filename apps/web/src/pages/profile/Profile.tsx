@@ -66,7 +66,7 @@ const Profile = () => {
   const [gradient, setGradient] = useState(initialGradient);
   const [editorOpen, setEditorOpen] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
-  const tabs = ownProf ? (["Home", "Account"] as const) : (["Home"] as const);
+  const tabs = ownProf ? (["Home", "Account", "Connections"] as const) : (["Home"] as const);
   const [updateUser, { isLoading: isSaving }] = useUpdateUserMutation();
   const [loginMutation] = useLoginMutation();
   const [activeTab, setActiveTab] = useState<"Home" | "Account">("Home");
@@ -493,7 +493,7 @@ const Profile = () => {
                                   </span>
                                   <button
                                     onClick={() => handleGoToSession(s.status, s._id)}
-                                    className="transition"
+                                    className={`transition ${ownProf && 'hidden'}`}
                                     title="Delete session"
                                   >
                                     <EyeIcon className="mx-5 w-4 h-4 text-accent cursor-pointer" />
@@ -556,7 +556,7 @@ const Profile = () => {
                         onVerifyPassword={handleVerifyPassword}
                       />
 
-                      <SpotifyConnection />
+                      
 
                       <button 
                         className="btn-primary w-full sm:w-auto text-sm sm:text-base" 
@@ -566,6 +566,9 @@ const Profile = () => {
                         {isSaving ? "Saving..." : `Save Profile${changedFields.size > 0 ? ` (${changedFields.size} change${changedFields.size === 1 ? '' : 's'})` : ''}`}
                       </button>
                     </motion.div>
+                  )}
+                  {activeTab === "Account" && ownProf && (
+                    <SpotifyConnection />
                   )}
                 </AnimatePresence>
               </div>
