@@ -184,7 +184,7 @@ export async function getValidAccessToken(userId: string): Promise<string | null
     }
 
     if (!connection.isExpired()) {
-      return connection.getDecryptedAccessToken(); //Property 'getDecryptedAccessToken' does not exist on type 'Document<unknown, {}, ISpotifyConnection, {}, DefaultSchemaOptions> & ISpotifyConnection & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+      return connection.getDecryptedAccessToken();
     }
 
     const manager = IntegrationManager.getInstance();
@@ -194,7 +194,7 @@ export async function getValidAccessToken(userId: string): Promise<string | null
       return null;
     }
 
-    const refreshToken = connection.getDecryptedRefreshToken(); //Property 'getDecryptedRefreshToken' does not exist on type 'Document<unknown, {}, ISpotifyConnection, {}, DefaultSchemaOptions> & ISpotifyConnection & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+    const refreshToken = connection.getDecryptedRefreshToken();
     const refreshResult = await spotify.refreshAccessToken(refreshToken);
 
     if (!refreshResult.success || !refreshResult.data) {
@@ -217,5 +217,177 @@ export async function getValidAccessToken(userId: string): Promise<string | null
     return null;
   }
 }
+
+router.get("/search", async (req, res) => {
+  try {
+    const { query, limit = 10 } = req.query;
+
+    if (!query) {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+
+    const token = req.cookies.token;
+    if (!token) {
+      console.error("[Spotify Search] No token cookie found");
+      return res.status(401).json({ error: "Not authenticated - no token cookie" });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      console.error("[Spotify Search] Invalid token");
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    console.log("[Spotify Search] User authenticated:", decoded.userId);
+
+    const accessToken = await getValidAccessToken(decoded.userId);
+    if (!accessToken) {
+      console.error("[Spotify Search] No valid access token for user:", decoded.userId);
+      return res.status(401).json({ 
+        error: "Spotify not connected or token expired. Please reconnect." 
+      });
+    }
+
+    console.log("[Spotify Search] Access token retrieved successfully");
+
+    const manager = IntegrationManager.getInstance();
+    const spotify = manager.get<SpotifyProvider>("spotify");
+
+    if (!spotify) {
+      console.error("[Spotify Search] Spotify provider not available");
+      return res.status(500).json({ error: "Spotify provider not available" });
+    }
+
+    console.log("[Spotify Search] Searching for:", query);
+
+    const searchResult = await spotify.search(
+      query as string,
+      accessToken,
+      ["artist", "playlist"],
+      Number(limit)
+    );
+
+    if (!searchResult.success) {
+      console.error("[Spotify Search] Search failed:", searchResult.error);
+      return res.status(500).json({ error: searchResult.error });
+    }
+
+    console.log("[Spotify Search] Search successful, returning results");
+
+    res.json({
+      artists: searchResult.data?.artists?.items || [],
+      playlists: searchResult.data?.playlists?.items || [],
+    });
+  } catch (error: any) {
+    console.error("[Spotify Search] Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/artist/:artistId/tracks", async (req, res) => {
+  try {
+    const { artistId } = req.params;
+    const { limit = 200 } = req.query;
+
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    const accessToken = await getValidAccessToken(decoded.userId);
+    if (!accessToken) {
+      return res.status(401).json({ 
+        error: "Spotify not connected or token expired. Please reconnect." 
+      });
+    }
+
+    const manager = IntegrationManager.getInstance();
+    const spotify = manager.get<SpotifyProvider>("spotify");
+
+    if (!spotify) {
+      return res.status(500).json({ error: "Spotify provider not available" });
+    }
+
+    const tracksResult = await spotify.getArtistDiscography(
+      artistId,
+      accessToken,
+      Number(limit)
+    );
+
+    if (!tracksResult.success) {
+      return res.status(500).json({ error: tracksResult.error });
+    }
+
+    const tracks = (tracksResult.data || []).map((track: any) => ({
+      name: track.name,
+      artist: track.artists.map((a: any) => a.name).join(", "),
+      previewUrl: track.preview_url,
+      artwork: track.album.images[0]?.url || "",
+    }));
+
+    res.json({ tracks });
+  } catch (error: any) {
+    console.error("[Spotify Artist Tracks] Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/playlist/:playlistId/tracks", async (req, res) => {
+  try {
+    const { playlistId } = req.params;
+    const { limit = 200 } = req.query;
+
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    const accessToken = await getValidAccessToken(decoded.userId);
+    if (!accessToken) {
+      return res.status(401).json({ 
+        error: "Spotify not connected or token expired. Please reconnect." 
+      });
+    }
+
+    const manager = IntegrationManager.getInstance();
+    const spotify = manager.get<SpotifyProvider>("spotify");
+
+    if (!spotify) {
+      return res.status(500).json({ error: "Spotify provider not available" });
+    }
+
+    const tracksResult = await spotify.getPlaylistTracks(
+      playlistId,
+      accessToken,
+      Number(limit)
+    );
+
+    if (!tracksResult.success) {
+      return res.status(500).json({ error: tracksResult.error });
+    }
+
+    const tracks = (tracksResult.data || []).map((track: any) => ({
+      name: track.name,
+      artist: track.artists.map((a: any) => a.name).join(", "),
+      previewUrl: track.preview_url,
+      artwork: track.album.images[0]?.url || "",
+    }));
+
+    res.json({ tracks });
+  } catch (error: any) {
+    console.error("[Spotify Playlist Tracks] Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;

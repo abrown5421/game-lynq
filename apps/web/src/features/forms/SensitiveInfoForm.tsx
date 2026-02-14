@@ -65,8 +65,8 @@ const SensitiveInfoForm = ({ onVerifyPassword }: SensitiveInfoFormProps) => {
   };
 
   return (
-    <div className="bg-neutral3-contrast rounded-lg p-6 space-y-4">
-      <h2 className="text-xl font-semibold font-primary">
+    <div className="bg-neutral2 rounded-xl border-2 border-neutral-contrast/10 p-4">
+      <h2 className="text-xl font-primary font-bold text-primary mb-4">
         Change Password
       </h2>
 
